@@ -1,0 +1,127 @@
+import Link from "next/link";
+import { Clock, HelpCircle, Star, BookOpen, ArrowRight } from "lucide-react";
+
+export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
+
+export interface TestCardData {
+  id: number;
+  category: string;
+  title: string;
+  difficulty: Difficulty;
+  duration: string;
+  questions: number;
+  description: string;
+  rating: number;
+}
+
+// ── Difficulty pill styles ────────────────────────────────────
+const difficultyStyles: Record<Difficulty, string> = {
+  Beginner: "bg-emerald-50 text-emerald-700",
+  Intermediate: "bg-orange-50 text-orange-700",
+  Advanced: "bg-red-50 text-red-700",
+};
+
+// ── Star rating renderer ──────────────────────────────────────
+function StarRating({ rating }: { rating: number }) {
+  const fullStars = Math.floor(rating);
+  const hasHalf = rating - fullStars >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+
+  return (
+    <span className="flex items-center gap-0.5 text-amber-600 text-[0.75rem] font-medium">
+      {Array.from({ length: fullStars }).map((_, i) => (
+        <Star key={`full-${i}`} size={12} fill="currentColor" strokeWidth={0} />
+      ))}
+      {hasHalf && (
+        <Star key="half" size={12} fill="currentColor" strokeWidth={0} className="opacity-50" />
+      )}
+      {Array.from({ length: emptyStars }).map((_, i) => (
+        <Star key={`empty-${i}`} size={12} fill="none" strokeWidth={1.5} className="opacity-40" />
+      ))}
+      <span className="ml-1">{rating.toFixed(1)}</span>
+    </span>
+  );
+}
+
+// ── Thumbnail placeholder ─────────────────────────────────────
+function CardThumbnail({ category }: { category: string }) {
+  return (
+    <div className="h-[120px] flex-shrink-0 bg-indigo-50 flex items-center justify-center relative overflow-hidden">
+      {/* Decorative diagonal lines */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute bg-indigo-100 h-px w-[200%] top-1/2 left-[-50%]"
+          style={{ transform: "rotate(18deg)" }}
+        />
+        <div
+          className="absolute bg-indigo-100 h-px w-[200%] top-1/2 left-[-50%]"
+          style={{ transform: "rotate(-18deg)" }}
+        />
+      </div>
+      <span className="relative z-10 flex items-center gap-1.5 bg-white text-slate-400 text-[0.72rem] px-3 py-1 border border-slate-200 rounded-md">
+        <BookOpen size={12} strokeWidth={2} />
+        {category}
+      </span>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────
+export default function TestCard({ card }: { card: TestCardData }) {
+  const { category, title, difficulty, duration, questions, description, rating } = card;
+
+  return (
+    <article className="bg-white border border-slate-200 rounded-2xl overflow-hidden flex flex-col shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-200">
+      {/* Thumbnail */}
+      <CardThumbnail category={category} />
+
+      {/* Body */}
+      <div className="px-4 pt-4 pb-[18px] flex flex-col gap-2.5 flex-1">
+        {/* Category */}
+        <div className="text-[0.67rem] font-bold uppercase tracking-[0.08em] text-indigo-600 border-b border-slate-200 pb-2">
+          {category}
+        </div>
+
+        {/* Title */}
+        <h2 className="font-['Sora',sans-serif] text-[0.95rem] font-bold text-slate-900 tracking-[-0.02em] leading-snug">
+          {title}
+        </h2>
+
+        {/* Meta tags */}
+        <div className="flex flex-wrap gap-1.5">
+          {/* Difficulty */}
+          <span
+            className={`text-[0.67rem] font-semibold px-2.5 py-[3px] rounded-full tracking-[0.02em] whitespace-nowrap ${difficultyStyles[difficulty]}`}
+          >
+            {difficulty}
+          </span>
+          {/* Duration */}
+          <span className="inline-flex items-center gap-1 text-[0.67rem] font-semibold px-2.5 py-[3px] rounded-full bg-slate-100 text-slate-600 whitespace-nowrap">
+            <Clock size={10} strokeWidth={2.5} />
+            {duration}
+          </span>
+          {/* Questions */}
+          <span className="inline-flex items-center gap-1 text-[0.67rem] font-semibold px-2.5 py-[3px] rounded-full bg-slate-100 text-slate-600 whitespace-nowrap">
+            <HelpCircle size={10} strokeWidth={2.5} />
+            {questions} questions
+          </span>
+        </div>
+
+        {/* Description */}
+        <p className="text-[0.8rem] leading-[1.65] text-slate-500 flex-1">{description}</p>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-slate-200 pt-3 mt-1">
+          <StarRating rating={rating} />
+          <Link
+            href="#"
+            className="inline-flex items-center gap-1 text-[0.76rem] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md px-3 py-1.5 no-underline transition-all duration-200 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white hover:-translate-y-px"
+          >
+            Take Test
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}

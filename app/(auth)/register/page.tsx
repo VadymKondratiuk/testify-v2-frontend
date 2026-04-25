@@ -1,0 +1,40 @@
+"use client";
+
+import { useState } from "react";
+import { User, Mail, Lock, ArrowRight } from "lucide-react";
+import { AuthContainer } from "@/components/auth/AuthContainer";
+import { SocialAuth } from "@/components/auth/SocialAuth";
+import { AuthInput } from "@/components/auth/AuthInput";
+
+export default function RegisterPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Тут буде логіка реєстрації
+  };
+
+  return (
+    <AuthContainer
+      title="Create an account"
+      subtitle="Join Testify to start tracking your knowledge."
+      footerText="Already have an account?"
+      footerLinkText="Log in"
+      footerLinkHref="/login"
+    >
+      <SocialAuth />
+      <form className="flex flex-col gap-4" onSubmit={handleRegister}>
+        <AuthInput id="name" label="Full Name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" icon={User} />
+        <AuthInput id="email" label="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" icon={Mail} />
+        <AuthInput id="password" label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" icon={Lock} />
+        
+        <button type="submit" className="cursor-pointer mt-2 w-full flex items-center justify-center gap-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-[family-name:var(--font-sora)] font-semibold text-[0.93rem] px-6 py-3 rounded-[10px] shadow-[0_4px_16px_rgba(79,70,229,0.38)] hover:shadow-[0_6px_22px_rgba(79,70,229,0.48)] hover:-translate-y-0.5 transition-all duration-[0.18s] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-2">
+          Sign Up
+          <ArrowRight size={16} strokeWidth={2.5} />
+        </button>
+      </form>
+    </AuthContainer>
+  );
+}
