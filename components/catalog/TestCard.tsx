@@ -67,48 +67,63 @@ function CardThumbnail({ category }: { category: string }) {
 }
 
 // ── Main component ────────────────────────────────────────────
-export default function TestCard({ card }: { card: TestCardData }) {
+export default function TestCard({ 
+  card, 
+  viewMode = "grid" 
+}: { 
+  card: TestCardData;
+  viewMode?: "grid" | "list";
+}) {
   const { category, title, difficulty, duration, questions, description, rating } = card;
 
   return (
-    <article className="bg-white border border-slate-200 rounded-2xl overflow-hidden flex flex-col shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-200">
+    <article className={`bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-200 flex
+      ${viewMode === "grid" ? "flex-col" : "flex-col sm:flex-row"}
+    `}>
       {/* Thumbnail */}
-      <CardThumbnail category={category} />
+      <div className={`${viewMode === "grid" ? "w-full" : "w-full sm:w-[220px] shrink-0"}`}>
+        {/* Додано h-full для CardThumbnail, щоб він розтягувався в режимі list */}
+        <div className="h-[120px] sm:h-full min-h-[120px] bg-indigo-50 flex items-center justify-center relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute bg-indigo-100 h-px w-[200%] top-1/2 left-[-50%]" style={{ transform: "rotate(18deg)" }} />
+            <div className="absolute bg-indigo-100 h-px w-[200%] top-1/2 left-[-50%]" style={{ transform: "rotate(-18deg)" }} />
+          </div>
+          <span className="relative z-10 flex items-center gap-1.5 bg-white text-slate-400 text-[0.72rem] px-3 py-1 border border-slate-200 rounded-md">
+            <BookOpen size={12} strokeWidth={2} />
+            {category}
+          </span>
+        </div>
+      </div>
 
       {/* Body */}
-      <div className="px-4 pt-4 pb-[18px] flex flex-col gap-2.5 flex-1">
-        {/* Category */}
-        <div className="text-[0.67rem] font-bold uppercase tracking-[0.08em] text-indigo-600 border-b border-slate-200 pb-2">
-          {category}
+      <div className={`px-4 pt-4 pb-[18px] flex flex-col gap-2.5 flex-1 ${viewMode === "list" ? "justify-center" : ""}`}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[0.67rem] font-bold uppercase tracking-[0.08em] text-indigo-600 mb-1.5">
+              {category}
+            </div>
+            <h2 className="font-['Sora',sans-serif] text-[1.05rem] font-bold text-slate-900 tracking-[-0.02em] leading-snug">
+              {title}
+            </h2>
+          </div>
         </div>
 
-        {/* Title */}
-        <h2 className="font-['Sora',sans-serif] text-[0.95rem] font-bold text-slate-900 tracking-[-0.02em] leading-snug">
-          {title}
-        </h2>
-
         {/* Meta tags */}
-        <div className="flex flex-wrap gap-1.5">
-          {/* Difficulty */}
-          <span
-            className={`text-[0.67rem] font-semibold px-2.5 py-[3px] rounded-full tracking-[0.02em] whitespace-nowrap ${difficultyStyles[difficulty]}`}
-          >
+        <div className="flex flex-wrap gap-1.5 my-1">
+          <span className={`text-[0.67rem] font-semibold px-2.5 py-[3px] rounded-full tracking-[0.02em] whitespace-nowrap ${difficultyStyles[difficulty]}`}>
             {difficulty}
           </span>
-          {/* Duration */}
           <span className="inline-flex items-center gap-1 text-[0.67rem] font-semibold px-2.5 py-[3px] rounded-full bg-slate-100 text-slate-600 whitespace-nowrap">
             <Clock size={10} strokeWidth={2.5} />
             {duration}
           </span>
-          {/* Questions */}
           <span className="inline-flex items-center gap-1 text-[0.67rem] font-semibold px-2.5 py-[3px] rounded-full bg-slate-100 text-slate-600 whitespace-nowrap">
             <HelpCircle size={10} strokeWidth={2.5} />
             {questions} questions
           </span>
         </div>
 
-        {/* Description */}
-        <p className="text-[0.8rem] leading-[1.65] text-slate-500 flex-1">{description}</p>
+        <p className="text-[0.8rem] leading-[1.65] text-slate-500 flex-1 line-clamp-2">{description}</p>
 
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-slate-200 pt-3 mt-1">
