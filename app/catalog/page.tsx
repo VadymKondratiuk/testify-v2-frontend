@@ -107,15 +107,6 @@ const activeFilters = ["IT & Programming", "11–30 Questions"];
 export default function DashboardPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FF] font-['DM_Sans',sans-serif] text-slate-900 antialiased">
-      {/* Breadcrumb */}
-      <div className="h-11 flex items-center gap-2 px-12 bg-white border-b border-slate-200 text-[0.8rem] shrink-0">
-        <Link href="/" className="font-medium text-indigo-600 no-underline hover:underline">
-          Home
-        </Link>
-        <span className="text-slate-400">/</span>
-        <span className="font-medium text-slate-700">Test Catalog</span>
-      </div>
-
       {/* Page body */}
       <div className="flex-1 flex items-stretch px-12 gap-0">
         <SidebarFilters />

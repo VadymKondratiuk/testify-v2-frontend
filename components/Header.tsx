@@ -21,7 +21,8 @@ export default function Header() {
         {[
           { label: "Home", href: "/" }, 
           { label: "Catalog", href: "/catalog" },
-          { label: "About Us", href: "/about" },
+          { label: "Profile", href: "/profile" },
+          { label: "Creator Studio", href: "/creator-studio" },
         ].map(({ label, href }) => {
           const isActive = pathname === href; 
 
@@ -41,7 +42,7 @@ export default function Header() {
         })}
       </nav>
 
-      {/* Actions */}
+      {/* Auth | Profile */}
       <div className="flex items-center gap-2.5">
         <Link
           href="/login"
