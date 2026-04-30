@@ -1,5 +1,5 @@
 // src/data/mockTests.ts
-import { TestCardData } from "@/components/catalog/TestCard";
+import { TestCardData } from "@/features/catalog/components/TestCard";
 
 export const mockTestCards: TestCardData[] = [
   { id: 1, category: "IT & Programming", title: "Python Basics", difficulty: "Beginner", duration: "30 mins", questions: 20, description: "Covers variables, loops, and functions. A great starting point for Python learners.", rating: 4.2 },

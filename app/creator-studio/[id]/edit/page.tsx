@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { ListChecks, Settings, Plus } from "lucide-react";
-import { TestData, Question } from "@/types/test-builder";
-import { BuilderHeader } from "@/components/creator-studio/edit/BuilderHeader";
-import { QuestionCard } from "@/components/creator-studio/edit/QuestionCard";
-import { TestSettings } from "@/components/creator-studio/edit/TestSettings";
+import { TestData, Question } from "@/features/edit/types/test-builder";
+import { BuilderHeader } from "@/features/edit/components/BuilderHeader";
+import { QuestionCard } from "@/features/edit/components/QuestionCard";
+import { TestSettings } from "@/features/edit/components/TestSettings";
 
 // ── МОКОВІ ДАНІ ──
 const mockTest: TestData = {

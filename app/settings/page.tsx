@@ -2,12 +2,12 @@
 "use client";
 
 import { useState } from "react";
-import { SettingsTabType } from "@/types/settings";
-import { SettingsHeader } from "@/components/settings/SettingsHeader";
-import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
-import { ProfileTab } from "@/components/settings/ProfileTab";
-import { SecurityTab } from "@/components/settings/SecurityTab";
-import { NotificationsTab } from "@/components/settings/NotificationsTab";
+import { SettingsTabType } from "@/features/settings/types/settings";
+import { SettingsHeader } from "@/features/settings/components/SettingsHeader";
+import { SettingsSidebar } from "@/features/settings/components/SettingsSidebar";
+import { ProfileTab } from "@/features/settings/components/ProfileTab";
+import { SecurityTab } from "@/features/settings/components/SecurityTab";
+import { NotificationsTab } from "@/features/settings/components/NotificationsTab";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabType>("profile");

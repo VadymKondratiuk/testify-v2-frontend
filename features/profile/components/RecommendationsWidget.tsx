@@ -1,6 +1,6 @@
 // src/components/profile/RecommendationsWidget.tsx
 import { BrainCircuit } from "lucide-react";
-import { RecommendationData } from "@/types/profile";
+import { RecommendationData } from "@/features/profile/types/profile";
 
 interface RecommendationsWidgetProps {
   recommendations: RecommendationData[];

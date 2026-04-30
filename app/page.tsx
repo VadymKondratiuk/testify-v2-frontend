@@ -1,8 +1,8 @@
-import Hero from "@/components/home/Hero";
-import Stats from "@/components/home/Stats";
-import Features from "@/components/home/Features";
-import HowItWorks from "@/components/home/HowItWorks";
-import CtaBanner from "@/components/home/CtaBanner";
+import Hero from "@/features/home/components/Hero";
+import Stats from "@/features/home/components/Stats";
+import Features from "@/features/home/components/Features";
+import HowItWorks from "@/features/home/components/HowItWorks";
+import CtaBanner from "@/features/home/components/CtaBanner";
  
 export default function HomePage() {
   return (

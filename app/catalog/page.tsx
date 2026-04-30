@@ -1,14 +1,14 @@
 "use client";
 
 import { LayoutGrid, List } from "lucide-react";
-import SidebarFilters from "@/components/catalog/SidebarFilters";
-import TestCard from "@/components/catalog/TestCard";
-import Pagination from "@/components/catalog/Pagination";
-import ActiveFilterTags from "@/components/catalog/ActiveFilterTags";
+import SidebarFilters from "@/features/catalog/components/SidebarFilters";
+import TestCard from "@/features/catalog/components/TestCard";
+import Pagination from "@/features/catalog/components/Pagination";
+import ActiveFilterTags from "@/features/catalog/components/ActiveFilterTags";
 
 // 1. Імпортуємо дані та логіку (хук)
-import { mockTestCards } from "@/data/mockTests";
-import { useCatalogFilters } from "@/hooks/useCatalogFilters";
+import { mockTestCards } from "@/features/catalog/mockTests";
+import { useCatalogFilters } from "@/features/catalog/hooks/useCatalogFilters";
 
 export default function DashboardPage() {
   // 2. Ініціалізуємо всю логіку одним рядком

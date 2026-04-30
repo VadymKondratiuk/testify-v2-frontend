@@ -1,5 +1,5 @@
 // src/components/profile/StatCard.tsx
-import { StatData } from "@/types/profile";
+import { StatData } from "@/features/profile/types/profile";
 
 interface StatCardProps {
   stat: StatData;

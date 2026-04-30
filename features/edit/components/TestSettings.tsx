@@ -1,5 +1,5 @@
 // src/components/creator-studio/TestSettings.tsx
-import { TestData } from "@/types/test-builder";
+import { TestData } from "@/features/edit/types/test-builder";
 import { ChevronDown } from "lucide-react";
 
 interface TestSettingsProps {

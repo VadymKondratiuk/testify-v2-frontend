@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { TestSummary } from "@/types/creator-studio";
-import { CreatorStudioHeader } from "@/components/creator-studio/CreatorStudioHeader";
-import { TestSearch } from "@/components/creator-studio/TestSearch";
-import { TestCard } from "@/components/creator-studio/TestCard";
-import { EmptyState } from "@/components/creator-studio/EmptyState";
+import { TestSummary } from "@/features/creator-studio/types/creator-studio";
+import { CreatorStudioHeader } from "@/features/creator-studio/components/CreatorStudioHeader";
+import { TestSearch } from "@/features/creator-studio/components/TestSearch";
+import { TestCard } from "@/features/creator-studio/components/TestCard";
+import { EmptyState } from "@/features/creator-studio/components/EmptyState";
 
 // ── МОКОВІ ДАНІ ──
 const myTestsMock: TestSummary[] = [

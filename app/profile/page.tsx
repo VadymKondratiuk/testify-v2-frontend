@@ -1,11 +1,11 @@
 // src/app/profile/page.tsx
 import { Target, TrendingUp, BrainCircuit, Clock } from "lucide-react";
-import { StatData, RecommendationData, RecentTest, UserProfile } from "@/types/profile";
-import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { StatCard } from "@/components/profile/StatCard";
-import { RecommendationsWidget } from "@/components/profile/RecommendationsWidget";
-import { UserProfileCard } from "@/components/profile/UserProfileCard";
-import { RecentHistoryWidget } from "@/components/profile/RecentHistoryWidget";
+import { StatData, RecommendationData, RecentTest, UserProfile } from "@/features/profile/types/profile";
+import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
+import { StatCard } from "@/features/profile/components/StatCard";
+import { RecommendationsWidget } from "@/features/profile/components/RecommendationsWidget";
+import { UserProfileCard } from "@/features/profile/components/UserProfileCard";
+import { RecentHistoryWidget } from "@/features/profile/components/RecentHistoryWidget";
 
 // ── МОКОВІ ДАНІ ──
 const userData: UserProfile = {

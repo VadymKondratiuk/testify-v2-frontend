@@ -1,10 +1,10 @@
 // src/app/creator-studio/[testId]/stats/page.tsx
 import { Users, BarChart3, Target, Clock } from "lucide-react";
-import { StatsHeader } from "@/components/creator-studio/stats/StatsHeader";
-import { OverviewCards } from "@/components/creator-studio/stats/OverviewCards";
-import { ScoreChart } from "@/components/creator-studio/stats/ScoreChart";
-import { ToughestQuestions } from "@/components/creator-studio/stats/ToughestQuestions";
-import { ResultsTable } from "@/components/creator-studio/stats/ResultsTable";
+import { StatsHeader } from "@/features/stats/components/StatsHeader";
+import { OverviewCards } from "@/features/stats/components/OverviewCards";
+import { ScoreChart } from "@/features/stats/components/ScoreChart";
+import { ToughestQuestions } from "@/features/stats/components/ToughestQuestions";
+import { ResultsTable } from "@/features/stats/components/ResultsTable";
 
 // ── МОКОВІ ДАНІ (У майбутньому прийдуть з бекенду) ──
 const statsOverview = [
@@ -49,7 +49,7 @@ export default function TestStatsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <ScoreChart data={scoreDistribution} />
-          <ToughestQuestions questions={toughestQuestions} />
+          <ToughestQuestions testId="undefined" questions={toughestQuestions} /> // У майбутньому замінити "undefined" на реальний testId для отримання даних з бекенду
         </div>
 
         <ResultsTable results={allResults} />

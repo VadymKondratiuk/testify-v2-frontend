@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { User, Mail, Lock, ArrowRight } from "lucide-react";
-import { AuthContainer } from "@/components/auth/AuthContainer";
-import { SocialAuth } from "@/components/auth/SocialAuth";
-import { AuthInput } from "@/components/auth/AuthInput";
+import { AuthContainer } from "@/features/auth/components/AuthContainer";
+import { SocialAuth } from "@/features/auth/components/SocialAuth";
+import { AuthInput } from "@/features/auth/components/AuthInput";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");

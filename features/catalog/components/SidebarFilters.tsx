@@ -8,12 +8,12 @@ import {
   DURATION_RANGES, 
   QUESTION_RANGES, 
   RATING_OPTIONS 
-} from "./filters/constants";
+} from "../constants";
 import { 
   FilterGroupTitle, 
   CheckboxOption, 
   RadioOption 
-} from "./filters/FilterControls";
+} from "./FilterControls";
 
 interface SidebarFiltersProps {
   categories: { label: string; count: number }[];

@@ -1,6 +1,6 @@
 // src/components/creator-studio/QuestionCard.tsx
 import { GripVertical, Trash2, Plus, CheckCircle2, X } from "lucide-react"; 
-import { Question } from "@/types/test-builder";
+import { Question } from "@/features/edit/types/test-builder";
 import { useRef, useEffect } from "react";
 
 interface QuestionCardProps {

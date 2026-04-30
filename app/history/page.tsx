@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { HistoryItem } from "@/types/history";
-import { HistoryHeader } from "@/components/history/HistoryHeader";
-import { HistoryControls } from "@/components/history/HistoryControls";
-import { HistoryCard } from "@/components/history/HistoryCard";
-import { HistoryEmptyState } from "@/components/history/HistoryEmptyState";
+import { HistoryItem } from "@/features/history/types/history";
+import { HistoryHeader } from "@/features/history/components/HistoryHeader";
+import { HistoryControls } from "@/features/history/components/HistoryControls";
+import { HistoryCard } from "@/features/history/components/HistoryCard";
+import { HistoryEmptyState } from "@/features/history/components/HistoryEmptyState";
 
 // МОКОВІ ДАНІ
 const mockHistory: HistoryItem[] = [
