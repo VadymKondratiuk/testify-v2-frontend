@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { HistoryItem } from "@/features/history/types/history";
+import { HistoryItem } from "@/features/history/history.types";
 import { HistoryHeader } from "@/features/history/components/HistoryHeader";
 import { HistoryControls } from "@/features/history/components/HistoryControls";
 import { HistoryCard } from "@/features/history/components/HistoryCard";

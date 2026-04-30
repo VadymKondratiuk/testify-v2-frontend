@@ -1,25 +1,7 @@
 import Link from "next/link";
 import { Clock, HelpCircle, Star, BookOpen, ArrowRight } from "lucide-react";
-
-export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
-
-export interface TestCardData {
-  id: number;
-  category: string;
-  title: string;
-  difficulty: Difficulty;
-  duration: string;
-  questions: number;
-  description: string;
-  rating: number;
-}
-
-// ── Difficulty pill styles ────────────────────────────────────
-const difficultyStyles: Record<Difficulty, string> = {
-  Beginner: "bg-emerald-50 text-emerald-700",
-  Intermediate: "bg-orange-50 text-orange-700",
-  Advanced: "bg-red-50 text-red-700",
-};
+import { TestCardData } from "../catalog.types";
+import { difficultyStyles } from "../catalog.consts";
 
 // ── Star rating renderer ──────────────────────────────────────
 function StarRating({ rating }: { rating: number }) {
@@ -40,29 +22,6 @@ function StarRating({ rating }: { rating: number }) {
       ))}
       <span className="ml-1">{rating.toFixed(1)}</span>
     </span>
-  );
-}
-
-// ── Thumbnail placeholder ─────────────────────────────────────
-function CardThumbnail({ category }: { category: string }) {
-  return (
-    <div className="h-[120px] flex-shrink-0 bg-indigo-50 flex items-center justify-center relative overflow-hidden">
-      {/* Decorative diagonal lines */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute bg-indigo-100 h-px w-[200%] top-1/2 left-[-50%]"
-          style={{ transform: "rotate(18deg)" }}
-        />
-        <div
-          className="absolute bg-indigo-100 h-px w-[200%] top-1/2 left-[-50%]"
-          style={{ transform: "rotate(-18deg)" }}
-        />
-      </div>
-      <span className="relative z-10 flex items-center gap-1.5 bg-white text-slate-400 text-[0.72rem] px-3 py-1 border border-slate-200 rounded-md">
-        <BookOpen size={12} strokeWidth={2} />
-        {category}
-      </span>
-    </div>
   );
 }
 

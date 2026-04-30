@@ -8,7 +8,7 @@ import {
   DURATION_RANGES, 
   QUESTION_RANGES, 
   RATING_OPTIONS 
-} from "../constants";
+} from "../catalog.consts";
 import { 
   FilterGroupTitle, 
   CheckboxOption, 

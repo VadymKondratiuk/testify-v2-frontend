@@ -3,7 +3,7 @@ import Link from "next/link";
 import { 
   MoreVertical, FileText, Users, Edit3, BarChart2, Trash2, CheckCircle2, Clock, Archive 
 } from "lucide-react";
-import { TestSummary } from "@/features/creator-studio/types/creator-studio";
+import { TestSummary } from "@/features/creator-studio/creator-studio.types";
 
 const getStatusStyles = (status: string) => {
   switch (status) {

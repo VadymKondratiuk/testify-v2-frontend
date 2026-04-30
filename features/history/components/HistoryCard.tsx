@@ -1,6 +1,6 @@
 // src/components/history/HistoryCard.tsx
 import { CheckCircle2, XCircle, Calendar, Clock, ChevronRight } from "lucide-react";
-import { HistoryItem } from "@/features/history/types/history";
+import { HistoryItem } from "@/features/history/history.types";
 
 interface HistoryCardProps {
   test: HistoryItem;

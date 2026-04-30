@@ -1,7 +1,7 @@
 // src/components/profile/RecentHistoryWidget.tsx
 import Link from "next/link";
 import { History, CheckCircle2, XCircle } from "lucide-react";
-import { RecentTest } from "@/features/profile/types/profile";
+import { RecentTest } from "@/features/profile/profile.types";
 
 interface RecentHistoryWidgetProps {
   history: RecentTest[];

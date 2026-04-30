@@ -1,17 +1,10 @@
 // src/components/creator-studio/stats/ResultsTable.tsx
 "use client";
 
+import { ResultData } from "../stats.types";
+
 import { useState } from "react";
 import { Search } from "lucide-react";
-
-interface ResultData {
-  id: number;
-  student: string;
-  score: number;
-  time: string;
-  date: string;
-  status: string;
-}
 
 interface ResultsTableProps {
   results: ResultData[];

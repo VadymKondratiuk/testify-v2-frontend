@@ -1,7 +1,7 @@
 // src/components/profile/UserProfileCard.tsx
 import Link from "next/link";
 import { User } from "lucide-react";
-import { UserProfile } from "@/features/profile/types/profile";
+import { UserProfile } from "@/features/profile/profile.types";
 
 interface UserProfileCardProps {
   user: UserProfile;

@@ -1,6 +1,6 @@
 // src/app/profile/page.tsx
 import { Target, TrendingUp, BrainCircuit, Clock } from "lucide-react";
-import { StatData, RecommendationData, RecentTest, UserProfile } from "@/features/profile/types/profile";
+import { StatData, RecommendationData, RecentTest, UserProfile } from "@/features/profile/profile.types";
 import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
 import { StatCard } from "@/features/profile/components/StatCard";
 import { RecommendationsWidget } from "@/features/profile/components/RecommendationsWidget";

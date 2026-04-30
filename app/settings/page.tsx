@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { SettingsTabType } from "@/features/settings/types/settings";
+import { SettingsTabType } from "@/features/settings/settings.types";
 import { SettingsHeader } from "@/features/settings/components/SettingsHeader";
 import { SettingsSidebar } from "@/features/settings/components/SettingsSidebar";
 import { ProfileTab } from "@/features/settings/components/ProfileTab";

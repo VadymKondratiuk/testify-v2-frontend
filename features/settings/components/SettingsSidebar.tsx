@@ -1,6 +1,6 @@
 // src/components/settings/SettingsSidebar.tsx
 import { User, Lock, Bell, LogOut } from "lucide-react";
-import { SettingsTabType } from "@/features/settings/types/settings";
+import { SettingsTabType } from "@/features/settings/settings.types";
 
 interface SettingsSidebarProps {
   activeTab: SettingsTabType;
