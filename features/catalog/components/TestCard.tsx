@@ -33,7 +33,7 @@ export default function TestCard({
   card: TestCardData;
   viewMode?: "grid" | "list";
 }) {
-  const { category, title, difficulty, duration, questions, description, rating } = card;
+  const { id, category, title, difficulty, duration, questions, description, rating } = card;
 
   return (
     <article className={`bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-200 flex
@@ -88,7 +88,7 @@ export default function TestCard({
         <div className="flex items-center justify-between border-t border-slate-200 pt-3 mt-1">
           <StarRating rating={rating} />
           <Link
-            href="#"
+            href={`/tests/${id}`}
             className="inline-flex items-center gap-1 text-[0.76rem] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md px-3 py-1.5 no-underline transition-all duration-200 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white hover:-translate-y-px"
           >
             Take Test
