@@ -2,8 +2,6 @@ export interface TestResultAnswer {
   questionId: string;
   selectedOptionIds: string[];
   earnedPoints: number;
-  timeSpentSeconds: number;
-  note?: string;
 }
 
 export interface TestResultData {

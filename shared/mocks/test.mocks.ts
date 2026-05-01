@@ -5,7 +5,7 @@ export const mockTest: TestData = {
   title: "Advanced JavaScript Concepts",
   description: "A comprehensive test covering closures, promises, and the event loop. Perfect for mid-level developers.",
   category: "Programming",
-  passingScore: 80,
+  passingScore: 50,
   timeLimit: 30,
   questions: [
     {
