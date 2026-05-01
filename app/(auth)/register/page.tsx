@@ -1,19 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { User, Mail, Lock, ArrowRight } from "lucide-react";
 import { AuthContainer } from "@/features/auth/components/AuthContainer";
 import { SocialAuth } from "@/features/auth/components/SocialAuth";
 import { AuthInput } from "@/features/auth/components/AuthInput";
+import { canAccessPath, getPostLoginRedirect } from "@/shared/auth/rbac";
+import { setClientSession } from "@/shared/auth/client-session";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    // Тут буде логіка реєстрації
+
+    const role = "USER";
+    setClientSession(role);
+
+    const nextPath = new URLSearchParams(window.location.search).get("next");
+    const fallbackPath = getPostLoginRedirect(role);
+    const targetPath =
+      nextPath &&
+      nextPath.startsWith("/") &&
+      !nextPath.startsWith("//") &&
+      canAccessPath({ isAuthenticated: true, role }, nextPath)
+        ? nextPath
+        : fallbackPath;
+
+    router.replace(targetPath);
+    router.refresh();
   };
 
   return (
@@ -29,7 +48,7 @@ export default function RegisterPage() {
         <AuthInput id="name" label="Full Name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" icon={User} />
         <AuthInput id="email" label="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" icon={Mail} />
         <AuthInput id="password" label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" icon={Lock} />
-        
+
         <button type="submit" className="cursor-pointer mt-2 w-full flex items-center justify-center gap-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-(family-name:--font-sora) font-semibold text-[0.93rem] px-6 py-3 rounded-[10px] shadow-[0_4px_16px_rgba(79,70,229,0.38)] hover:shadow-[0_6px_22px_rgba(79,70,229,0.48)] hover:-translate-y-0.5 transition-all duration-[0.18s] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-2">
           Sign Up
           <ArrowRight size={16} strokeWidth={2.5} />
@@ -38,3 +57,4 @@ export default function RegisterPage() {
     </AuthContainer>
   );
 }
+
