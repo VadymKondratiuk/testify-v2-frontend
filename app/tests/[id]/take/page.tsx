@@ -91,7 +91,6 @@ export default function TakeTestPage({ params }: TakeTestPageProps) {
   };
 
   return (
-    // Змінено класи для центрування всього блоку на екрані
     <div className="min-h-screen bg-[#F5F7FF] text-[#0F172A]">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-6 lg:flex-row lg:px-8">
         
