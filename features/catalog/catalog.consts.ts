@@ -1,6 +1,6 @@
 // src/components/catalog/filters/constants.ts
 
-import { Difficulty } from "./catalog.types";
+import { Difficulty } from "../../shared/types/testCardData.types";
 
 export const DIFFICULTY_OPTIONS = [
   "All Levels",

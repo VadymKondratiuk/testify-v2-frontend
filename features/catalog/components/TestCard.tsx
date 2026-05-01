@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Clock, HelpCircle, Star, BookOpen, ArrowRight } from "lucide-react";
-import { TestCardData } from "../catalog.types";
+import { TestCardData } from "../../../shared/types/testCardData.types";
 import { difficultyStyles } from "../catalog.consts";
 
 // ── Star rating renderer ──────────────────────────────────────

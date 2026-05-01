@@ -7,7 +7,7 @@ import Pagination from "@/features/catalog/components/Pagination";
 import ActiveFilterTags from "@/features/catalog/components/ActiveFilterTags";
 
 // 1. Імпортуємо дані та логіку (хук)
-import { mockTestCards } from "@/features/catalog/catalog.mock";
+import { mockTestCards } from "@/shared/mocks/testCardData.mocks";
 import { useCatalogFilters } from "@/features/catalog/hooks/useCatalogFilters";
 
 export default function DashboardPage() {

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 // Імпортуй свої мокові дані з правильного шляху
-import { mockTestCards } from '@/features/catalog/catalog.mock'; 
+import { mockTestCards } from '@/shared/mocks/testCardData.mocks'; 
 
 // Імпортуємо наші нові дрібні компоненти
 import { TestHeader } from '@/features/tests/components/TestHeader';

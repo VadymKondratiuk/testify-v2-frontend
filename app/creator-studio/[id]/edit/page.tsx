@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { ListChecks, Settings, Plus } from "lucide-react";
-import { TestData, Question } from "@/features/edit/edit.types";
+import { TestData, Question } from "@/shared/types/test.types";
 import { BuilderHeader } from "@/features/edit/components/BuilderHeader";
 import { QuestionCard } from "@/features/edit/components/QuestionCard";
 import { TestSettings } from "@/features/edit/components/TestSettings";
-import { mockTest } from "@/features/edit/edit.mock";
+import { mockTest } from "@/shared/mocks/test.mocks";
 
 export default function TestBuilderPage() {
   const [activeTab, setActiveTab] = useState<"questions" | "settings">("settings");

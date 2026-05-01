@@ -1,6 +1,6 @@
 // src/hooks/useCatalogFilters.ts
 import { useState, useMemo } from "react";
-import { TestCardData } from "@/features/catalog/catalog.types";
+import { TestCardData } from "@/shared/types/testCardData.types";
 
 export function useCatalogFilters(initialData: TestCardData[]) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
