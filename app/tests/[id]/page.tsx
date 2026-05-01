@@ -25,7 +25,7 @@ export default async function TestDetailsPage({ params }: TestDetailsPageProps) 
 
   return (
     <div className="w-full min-h-screen bg-[#F5F7FF]">
-      {/* 1. Повноширинний Хедер */}
+      {/* 1. Хедер */}
       <TestHeader 
         id={testData.id} 
         title={testData.title} 

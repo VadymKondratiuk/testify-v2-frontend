@@ -1,5 +1,8 @@
+"use client";
+
 import Link from 'next/link';
 import { ArrowLeft, Play } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface TestHeaderProps {
   id: number;
@@ -8,6 +11,8 @@ interface TestHeaderProps {
 }
 
 export const TestHeader = ({ id, title, category }: TestHeaderProps) => {
+  const router = useRouter();
+
   return (
     <div className="bg-white border-b border-[#E2E8F0] px-5 md:px-8 lg:px-12 py-8">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -27,13 +32,14 @@ export const TestHeader = ({ id, title, category }: TestHeaderProps) => {
           </h1>
         </div>
         
-        <Link 
-          href={`/tests/${id}/take`}
-          className="cursor-pointer shrink-0 flex items-center justify-center gap-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8 py-3.5 rounded-xl font-semibold text-[0.95rem] shadow-[0_4px_12px_rgba(79,70,229,0.25)] hover:shadow-[0_6px_16px_rgba(79,70,229,0.35)] hover:-translate-y-0.5 transition-all"
+        <button 
+          onClick={() => router.replace(`/tests/${id}/take`)}
+          className="group relative cursor-pointer shrink-0 flex items-center justify-center gap-2 bg-gradient-to-r from-[#4F46E5] to-[#6366F1] text-white px-8 py-3.5 rounded-xl font-bold text-[1rem] shadow-[0_8px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_12px_25px_rgba(79,70,229,0.45)] hover:-translate-y-1 transition-all duration-300 overflow-hidden"
         >
-          <Play size={18} fill="currentColor" />
-          Start Test Now
-        </Link>
+          <div className="absolute inset-0 -translate-x-[150%] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+          <Play size={18} fill="currentColor" className="relative z-10 transition-transform duration-300 group-hover:scale-110" />
+          <span className="relative z-10">Start Test Now</span>
+        </button>
       </div>
     </div>
   );
