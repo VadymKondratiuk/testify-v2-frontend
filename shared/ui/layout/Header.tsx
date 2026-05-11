@@ -1,19 +1,14 @@
-"use client"; 
+"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, UserCircle } from "lucide-react";
-import { useEffect, useState } from "react";
 import {
   CREATOR_STUDIO_ROLES,
   canRoleAccess,
-  type AuthSession,
-} from "@/shared/auth/rbac";
-import {
-  AUTH_SESSION_EVENT,
-  clearClientSession,
-  getClientSession,
-} from "@/shared/auth/client-session";
+} from "@/features/auth/auth.rbac";
+import { AuthService } from "@/features/auth/auth.service";
+import { useAuthStore } from "@/features/auth/auth.store";
 
 const publicNavItems = [
   { label: "Home", href: "/" },
@@ -29,39 +24,26 @@ const creatorNavItem = { label: "Creator Studio", href: "/creator-studio" } as c
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const [session, setSession] = useState<AuthSession>({
-    isAuthenticated: false,
-    role: null,
-  });
-
-  useEffect(() => {
-    const syncSession = () => setSession(getClientSession());
-
-    syncSession();
-    window.addEventListener(AUTH_SESSION_EVENT, syncSession);
-    window.addEventListener("focus", syncSession);
-
-    return () => {
-      window.removeEventListener(AUTH_SESSION_EVENT, syncSession);
-      window.removeEventListener("focus", syncSession);
-    };
-  }, []);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isAuthReady = useAuthStore((state) => state.isAuthReady);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
 
   const navItems = [
     ...publicNavItems,
-    ...(session.isAuthenticated ? authenticatedNavItems : []),
-    ...(canRoleAccess(session.role, CREATOR_STUDIO_ROLES) ? [creatorNavItem] : []),
+    ...(isAuthenticated ? authenticatedNavItems : []),
+    ...(canRoleAccess(user?.role ?? null, CREATOR_STUDIO_ROLES) ? [creatorNavItem] : []),
   ];
 
-  const handleLogout = () => {
-    clearClientSession();
+  const handleLogout = async () => {
+    await AuthService.logout();
+    clearAuth();
     router.push("/login");
     router.refresh();
   };
 
   return (
     <header className="sticky top-0 z-[200] h-[70px] flex items-center justify-between gap-6 px-12 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
-      {/* Logo */}
       <Link
         href="/"
         className="font-['Sora',sans-serif] font-extrabold text-2xl tracking-[-0.04em] text-indigo-600 no-underline flex-shrink-0 after:content-['.'] after:text-amber-400"
@@ -69,10 +51,9 @@ export default function Header() {
         Testify
       </Link>
 
-      {/* Nav */}
       <nav className="flex items-center gap-0.5">
         {navItems.map(({ label, href }) => {
-          const isActive = href === "/" ? pathname === href : pathname.startsWith(href); 
+          const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
 
           return (
             <Link
@@ -90,16 +71,17 @@ export default function Header() {
         })}
       </nav>
 
-      {/* Auth | Profile */}
-      <div className="flex items-center gap-2.5">
-        {session.isAuthenticated ? (
+      <div className="flex min-w-[185px] items-center justify-end gap-2.5">
+        {!isAuthReady ? (
+          <div className="h-9 w-[145px] rounded-md bg-slate-100" aria-hidden="true" />
+        ) : isAuthenticated && user ? (
           <>
             <Link
               href="/profile"
               className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-[0.82rem] font-semibold text-slate-700 no-underline transition-colors hover:bg-indigo-50 hover:text-indigo-600"
             >
               <UserCircle size={16} />
-              {session.role}
+              {user.role}
             </Link>
             <button
               type="button"

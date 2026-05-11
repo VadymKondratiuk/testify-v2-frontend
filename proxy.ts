@@ -1,34 +1,33 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
   AUTH_COOKIE_NAME,
-  ROLE_COOKIE_NAME,
   canRoleAccess,
-  getPostLoginRedirect,
   getRequiredRoles,
+  getPostLoginRedirect,
   isGuestOnlyPath,
-  normalizeRole,
-} from "@/shared/auth/rbac";
+} from "@/features/auth/auth.rbac";
+import {
+  SIGNED_ROLE_COOKIE_NAME,
+  verifySignedRoleValue,
+} from "@/features/auth/auth.signed-role";
 
-function getSession(request: NextRequest) {
-  const role = normalizeRole(request.cookies.get(ROLE_COOKIE_NAME)?.value);
-  const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-
-  return {
-    isAuthenticated: Boolean(sessionToken && role),
-    role,
-  };
+function isAuthenticated(request: NextRequest) {
+  return Boolean(request.cookies.get(AUTH_COOKIE_NAME)?.value);
 }
 
 function getSafeNextPath(pathname: string) {
   return encodeURIComponent(pathname);
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { nextUrl } = request;
-  const session = getSession(request);
+  const hasSession = isAuthenticated(request);
+  const role = await verifySignedRoleValue(
+    request.cookies.get(SIGNED_ROLE_COOKIE_NAME)?.value,
+  );
 
-  if (isGuestOnlyPath(nextUrl.pathname) && session.isAuthenticated) {
-    return NextResponse.redirect(new URL(getPostLoginRedirect(session.role), request.url));
+  if (isGuestOnlyPath(nextUrl.pathname) && hasSession) {
+    return NextResponse.redirect(new URL(getPostLoginRedirect(role), request.url));
   }
 
   const requiredRoles = getRequiredRoles(nextUrl.pathname);
@@ -36,13 +35,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!session.isAuthenticated) {
+  if (!hasSession || !role) {
     return NextResponse.redirect(
       new URL(`/login?next=${getSafeNextPath(nextUrl.pathname)}`, request.url),
     );
   }
 
-  if (!canRoleAccess(session.role, requiredRoles)) {
+  if (!canRoleAccess(role, requiredRoles)) {
     return NextResponse.redirect(
       new URL(`/forbidden?from=${getSafeNextPath(nextUrl.pathname)}`, request.url),
     );
@@ -63,4 +62,3 @@ export const config = {
     "/creator-studio/:path*",
   ],
 };
-

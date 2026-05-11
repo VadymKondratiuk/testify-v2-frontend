@@ -13,9 +13,10 @@ interface AuthInputProps {
   placeholder: string;
   icon: LucideIcon;
   forgotPasswordHref?: string;
+  required?: boolean;
 }
 
-export function AuthInput({ id, label, type, value, onChange, placeholder, icon: Icon, forgotPasswordHref }: AuthInputProps) {
+export function AuthInput({ id, label, type, value, onChange, placeholder, icon: Icon, forgotPasswordHref, required }: AuthInputProps) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
   const currentType = isPassword ? (showPassword ? "text" : "password") : type;
@@ -40,6 +41,7 @@ export function AuthInput({ id, label, type, value, onChange, placeholder, icon:
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          required={required}
           className="w-full pl-10 pr-11 py-2.5 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] text-[0.9rem] placeholder:text-[#CBD5E1] hover:border-[#CBD5E1] hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30 focus:border-[#4F46E5] focus:bg-white transition-all duration-[0.18s]"
         />
         {isPassword && (
