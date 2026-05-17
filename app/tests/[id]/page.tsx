@@ -15,9 +15,7 @@ interface TestDetailsPageProps {
 
 export default async function TestDetailsPage({ params }: TestDetailsPageProps) {
   const resolvedParams = await params;
-  
-  const testId = parseInt(resolvedParams.id, 10);
-  const testData = mockTestCards.find((t) => t.id === testId);
+  const testData = mockTestCards.find((test) => test.id === resolvedParams.id);
 
   if (!testData) {
     notFound(); 

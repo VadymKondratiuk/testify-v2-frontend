@@ -1,7 +1,7 @@
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export interface TestCardData {
-  id: number;
+  id: string;
   category: string;
   title: string;
   difficulty: Difficulty;

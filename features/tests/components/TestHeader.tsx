@@ -5,7 +5,7 @@ import { ArrowLeft, Play } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TestHeaderProps {
-  id: number;
+  id: string;
   title: string;
   category: string;
 }
