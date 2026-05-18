@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import axios from "axios";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { ListChecks, Settings, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { BuilderHeader } from "@/features/edit/components/BuilderHeader";
@@ -11,11 +12,14 @@ import { CategoryOption, Question, TestData } from "@/shared/types/test.types";
 
 type QuestionConfigValue = Question["type"] | number;
 type TestSettingValue = TestData[keyof TestData];
+type SaveStatus = "saved" | "unsaved" | "saving" | "error";
+type BackendQuestionType = QuestionApiResponse["type"];
 
 interface TestApiResponse {
   id: string;
   title: string;
   description: string | null;
+  isPublished: boolean;
   passingScore: number;
   timeLimit: number | null;
   category: {
@@ -49,9 +53,52 @@ const emptyTest: TestData = {
   title: "",
   description: "",
   category: "",
+  categoryId: "",
   passingScore: 60,
   timeLimit: "",
   questions: [],
+};
+
+const buildSaveSnapshot = (test: TestData) =>
+  JSON.stringify({
+    title: test.title,
+    description: test.description,
+    categoryId: test.categoryId,
+    passingScore: test.passingScore,
+    timeLimit: test.timeLimit,
+  });
+
+const buildQuestionSnapshot = (question: Question) =>
+  JSON.stringify({
+    text: question.text,
+    type: question.type,
+    points: question.points,
+    tags: question.tags,
+  });
+
+const buildOptionSnapshot = (option: Question["options"][number]) =>
+  JSON.stringify({
+    text: option.text,
+    isCorrect: option.isCorrect,
+  });
+
+const getPublishErrorMessage = (error: unknown) => {
+  if (!axios.isAxiosError(error)) {
+    return "Could not publish test";
+  }
+
+  const message = error.response?.data?.message;
+  const validationErrors = error.response?.data?.errors;
+
+  if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+    return validationErrors[0];
+  }
+
+  if (Array.isArray(message)) {
+    return message[0] ?? "Could not publish test";
+  }
+
+  return typeof message === "string" ? message : "Could not publish test";
 };
 
 const mapQuestionType = (type: QuestionApiResponse["type"]): Question["type"] => {
@@ -66,26 +113,56 @@ const mapQuestionType = (type: QuestionApiResponse["type"]): Question["type"] =>
   }
 };
 
+const mapBackendQuestionType = (type: Question["type"]): BackendQuestionType => {
+  switch (type) {
+    case "Multiple Choice":
+      return "MULTIPLE_CHOICE";
+    case "Text Answer":
+      return "TEXT_ANSWER";
+    case "Single Choice":
+    default:
+      return "SINGLE_CHOICE";
+  }
+};
+
+const mapApiQuestion = (question: QuestionApiResponse): Question => ({
+  id: question.id,
+  type: mapQuestionType(question.type),
+  points: question.points,
+  text: question.text,
+  tags: question.tags.map((tag) => tag.name),
+  options: question.options.map((option) => ({
+    id: option.id,
+    text: option.text,
+    isCorrect: option.isCorrect,
+  })),
+});
+
 const mapTestData = (test: TestApiResponse, questions: QuestionApiResponse[]): TestData => ({
   id: test.id,
   title: test.title,
   description: test.description ?? "",
   category: test.category?.name ?? "",
+  categoryId: test.category?.id ?? "",
   passingScore: test.passingScore,
   timeLimit: test.timeLimit ?? "",
-  questions: questions.map((question) => ({
-    id: question.id,
-    type: mapQuestionType(question.type),
-    points: question.points,
-    text: question.text,
-    tags: question.tags.map((tag) => tag.name),
-    options: question.options.map((option) => ({
-      id: option.id,
-      text: option.text,
-      isCorrect: option.isCorrect,
-    })),
-  })),
+  questions: questions.map(mapApiQuestion),
 });
+
+const rememberSavedQuestions = (
+  questions: Question[],
+  questionSnapshots: MutableRefObject<Map<string, string>>,
+  optionSnapshots: MutableRefObject<Map<string, string>>,
+) => {
+  questionSnapshots.current = new Map(
+    questions.map((question) => [question.id, buildQuestionSnapshot(question)]),
+  );
+  optionSnapshots.current = new Map(
+    questions.flatMap((question) =>
+      question.options.map((option) => [option.id, buildOptionSnapshot(option)] as const),
+    ),
+  );
+};
 
 export default function TestBuilderPage() {
   const params = useParams<{ id: string }>();
@@ -94,6 +171,29 @@ export default function TestBuilderPage() {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPublished, setIsPublished] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  const [saveMessage, setSaveMessage] = useState("Saved");
+  const lastSavedSnapshotRef = useRef(buildSaveSnapshot(emptyTest));
+  const savedQuestionSnapshotsRef = useRef<Map<string, string>>(new Map());
+  const savedOptionSnapshotsRef = useRef<Map<string, string>>(new Map());
+  const saveRequestIdRef = useRef(0);
+  const questionSaveRequestIdRef = useRef(0);
+
+  const savePayload = useMemo(() => ({
+    title: testData.title,
+    description: testData.description,
+    passingScore: testData.passingScore,
+    timeLimit: testData.timeLimit === "" ? null : Number(testData.timeLimit),
+    categoryId: testData.categoryId || null,
+  }), [
+    testData.title,
+    testData.description,
+    testData.passingScore,
+    testData.timeLimit,
+    testData.categoryId,
+  ]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -115,8 +215,14 @@ export default function TestBuilderPage() {
           }),
         ]);
 
-        setTestData(mapTestData(testResponse.data, questionsResponse.data));
+        const loadedTest = mapTestData(testResponse.data, questionsResponse.data);
+        setTestData(loadedTest);
         setCategories(categoriesResponse.data.items);
+        setIsPublished(testResponse.data.isPublished);
+        lastSavedSnapshotRef.current = buildSaveSnapshot(loadedTest);
+        rememberSavedQuestions(loadedTest.questions, savedQuestionSnapshotsRef, savedOptionSnapshotsRef);
+        setSaveStatus("saved");
+        setSaveMessage("Saved");
       } catch {
         if (!controller.signal.aborted) {
           setError("Could not load test data. Please try again.");
@@ -135,39 +241,317 @@ export default function TestBuilderPage() {
     };
   }, [params.id]);
 
-  const updateSetting = (field: keyof TestData, value: TestSettingValue) => {
-    setTestData({ ...testData, [field]: value });
-  };
+  useEffect(() => {
+    if (isLoading || error) {
+      return;
+    }
 
-  const addQuestion = () => {
-    const newQuestion: Question = {
-      id: `q${Date.now()}`,
-      type: "Single Choice",
-      points: 1,
-      text: "",
-      tags: [],
-      options: [
-        { id: `o${Date.now()}-1`, text: "Option 1", isCorrect: false },
-        { id: `o${Date.now()}-2`, text: "Option 2", isCorrect: false },
-      ],
+    const snapshot = buildSaveSnapshot(testData);
+
+    if (snapshot === lastSavedSnapshotRef.current) {
+      return;
+    }
+
+    if (testData.title.trim().length === 0) {
+      return;
+    }
+    const requestId = saveRequestIdRef.current + 1;
+    saveRequestIdRef.current = requestId;
+
+    const timeoutId = window.setTimeout(async () => {
+      setSaveStatus("saving");
+      setSaveMessage("Saving...");
+
+      try {
+        await api.patch(`/tests/${params.id}`, savePayload);
+
+        if (saveRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        lastSavedSnapshotRef.current = snapshot;
+        setSaveStatus("saved");
+        setSaveMessage("Saved just now");
+      } catch {
+        if (saveRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        setSaveStatus("error");
+        setSaveMessage("Could not save changes");
+      }
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
     };
-    setTestData({ ...testData, questions: [...testData.questions, newQuestion] });
+  }, [error, isLoading, params.id, savePayload, testData]);
+
+  useEffect(() => {
+    if (isLoading || error) {
+      return;
+    }
+
+    const changedQuestions = testData.questions.filter(
+      (question) => buildQuestionSnapshot(question) !== savedQuestionSnapshotsRef.current.get(question.id),
+    );
+    const changedOptions = testData.questions.flatMap((question) =>
+      question.options
+        .filter((option) => buildOptionSnapshot(option) !== savedOptionSnapshotsRef.current.get(option.id))
+        .map((option) => ({ question, option })),
+    );
+
+    if (changedQuestions.length === 0 && changedOptions.length === 0) {
+      return;
+    }
+
+    const hasInvalidQuestion = changedQuestions.some((question) => question.text.trim().length < 3);
+    const hasInvalidOption = changedOptions.some(({ option }) => option.text.trim().length === 0);
+    const hasUnsupportedTextAnswerChange = changedQuestions.some(
+      (question) => question.type === "Text Answer" && question.options.length > 0,
+    );
+
+    if (hasInvalidQuestion || hasInvalidOption || hasUnsupportedTextAnswerChange) {
+      return;
+    }
+
+    const requestId = questionSaveRequestIdRef.current + 1;
+    questionSaveRequestIdRef.current = requestId;
+
+    const timeoutId = window.setTimeout(async () => {
+      setSaveStatus("saving");
+      setSaveMessage("Saving...");
+
+      try {
+        for (const question of changedQuestions) {
+          await api.patch<QuestionApiResponse>(`/questions/${question.id}`, {
+            text: question.text,
+            type: mapBackendQuestionType(question.type),
+            points: question.points,
+            tagNames: question.tags,
+          });
+        }
+
+        const optionChanges = [...changedOptions].sort((left, right) => {
+          if (left.option.isCorrect === right.option.isCorrect) return 0;
+          return left.option.isCorrect ? 1 : -1;
+        });
+
+        for (const { option } of optionChanges) {
+          await api.patch(`/options/${option.id}`, {
+            text: option.text,
+            isCorrect: option.isCorrect,
+          });
+        }
+
+        if (questionSaveRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        for (const question of changedQuestions) {
+          savedQuestionSnapshotsRef.current.set(question.id, buildQuestionSnapshot(question));
+        }
+        for (const { option } of changedOptions) {
+          savedOptionSnapshotsRef.current.set(option.id, buildOptionSnapshot(option));
+        }
+
+        setSaveStatus("saved");
+        setSaveMessage("Saved just now");
+      } catch {
+        if (questionSaveRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        setSaveStatus("error");
+        setSaveMessage("Could not save changes");
+      }
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [error, isLoading, testData.questions]);
+
+  const updateSetting = (field: keyof TestData, value: TestSettingValue) => {
+    setTestData((currentTest) => ({ ...currentTest, [field]: value }));
+
+    if (field === "title" && typeof value === "string" && value.trim().length === 0) {
+      setSaveStatus("error");
+      setSaveMessage("Title is required");
+      return;
+    }
+
+    setSaveStatus("unsaved");
+    setSaveMessage("Unsaved changes");
   };
 
-  const removeQuestion = (questionId: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.filter((q) => q.id !== questionId),
+  const markUnsaved = () => {
+    setSaveStatus("unsaved");
+    setSaveMessage("Unsaved changes");
+  };
+
+  const saveCurrentQuestions = async () => {
+    const changedQuestions = testData.questions.filter(
+      (question) => buildQuestionSnapshot(question) !== savedQuestionSnapshotsRef.current.get(question.id),
+    );
+    const changedOptions = testData.questions.flatMap((question) =>
+      question.options
+        .filter((option) => buildOptionSnapshot(option) !== savedOptionSnapshotsRef.current.get(option.id))
+        .map((option) => ({ question, option })),
+    );
+
+    for (const question of changedQuestions) {
+      await api.patch<QuestionApiResponse>(`/questions/${question.id}`, {
+        text: question.text,
+        type: mapBackendQuestionType(question.type),
+        points: question.points,
+        tagNames: question.tags,
+      });
+      savedQuestionSnapshotsRef.current.set(question.id, buildQuestionSnapshot(question));
+    }
+
+    const optionChanges = [...changedOptions].sort((left, right) => {
+      if (left.option.isCorrect === right.option.isCorrect) return 0;
+      return left.option.isCorrect ? 1 : -1;
     });
+
+    for (const { option } of optionChanges) {
+      await api.patch(`/options/${option.id}`, {
+        text: option.text,
+        isCorrect: option.isCorrect,
+      });
+      savedOptionSnapshotsRef.current.set(option.id, buildOptionSnapshot(option));
+    }
+  };
+
+  const togglePublishTest = async () => {
+    if (isPublishing) {
+      return;
+    }
+
+    setIsPublishing(true);
+    setSaveStatus("saving");
+    setSaveMessage(isPublished ? "Unpublishing..." : "Publishing...");
+
+    try {
+      if (!isPublished) {
+        await api.patch(`/tests/${params.id}`, savePayload);
+        lastSavedSnapshotRef.current = buildSaveSnapshot(testData);
+
+        await saveCurrentQuestions();
+      }
+      await api.patch(`/tests/${params.id}/publish`, { isPublished: !isPublished });
+
+      setIsPublished((current) => !current);
+      setSaveStatus("saved");
+      setSaveMessage(isPublished ? "Unpublished" : "Published");
+    } catch (publishError) {
+      setSaveStatus("error");
+      setSaveMessage(getPublishErrorMessage(publishError));
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const addQuestion = async () => {
+    setSaveStatus("saving");
+    setSaveMessage("Creating question...");
+
+    try {
+      const questionResponse = await api.post<QuestionApiResponse>("/questions", {
+        testId: params.id,
+        text: "New question",
+        type: "SINGLE_CHOICE",
+        points: 1,
+        tagNames: [],
+      });
+      const [firstOptionResponse, secondOptionResponse] = await Promise.all([
+        api.post<{ id: string; text: string; isCorrect: boolean }>("/options", {
+          questionId: questionResponse.data.id,
+          text: "Option 1",
+          isCorrect: true,
+        }),
+        api.post<{ id: string; text: string; isCorrect: boolean }>("/options", {
+          questionId: questionResponse.data.id,
+          text: "Option 2",
+          isCorrect: false,
+        }),
+      ]);
+      const newQuestion: Question = {
+        ...mapApiQuestion(questionResponse.data),
+        options: [
+          {
+            id: firstOptionResponse.data.id,
+            text: firstOptionResponse.data.text,
+            isCorrect: firstOptionResponse.data.isCorrect,
+          },
+          {
+            id: secondOptionResponse.data.id,
+            text: secondOptionResponse.data.text,
+            isCorrect: secondOptionResponse.data.isCorrect,
+          },
+        ],
+      };
+
+      savedQuestionSnapshotsRef.current.set(newQuestion.id, buildQuestionSnapshot(newQuestion));
+      for (const option of newQuestion.options) {
+        savedOptionSnapshotsRef.current.set(option.id, buildOptionSnapshot(option));
+      }
+
+      setTestData((currentTest) => ({
+        ...currentTest,
+        questions: [...currentTest.questions, newQuestion],
+      }));
+      setSaveStatus("saved");
+      setSaveMessage("Saved just now");
+    } catch {
+      setSaveStatus("error");
+      setSaveMessage("Could not create question");
+    }
+  };
+
+  const removeQuestion = async (questionId: string) => {
+    const questionToRemove = testData.questions.find((question) => question.id === questionId);
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.filter((q) => q.id !== questionId),
+    }));
+    setSaveStatus("saving");
+    setSaveMessage("Deleting question...");
+
+    try {
+      await api.delete(`/questions/${questionId}`);
+      savedQuestionSnapshotsRef.current.delete(questionId);
+      for (const option of questionToRemove?.options ?? []) {
+        savedOptionSnapshotsRef.current.delete(option.id);
+      }
+      setSaveStatus("saved");
+      setSaveMessage("Saved just now");
+    } catch {
+      if (questionToRemove) {
+        setTestData((currentTest) => ({
+          ...currentTest,
+          questions: [...currentTest.questions, questionToRemove],
+        }));
+      }
+      setSaveStatus("error");
+      setSaveMessage("Could not delete question");
+    }
   };
 
   const updateQuestionText = (questionId: string, newText: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) =>
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) =>
         q.id === questionId ? { ...q, text: newText } : q,
       ),
-    });
+    }));
+    if (newText.trim().length < 3) {
+      setSaveStatus("error");
+      setSaveMessage("Question text must be at least 3 characters");
+      return;
+    }
+    markUnsaved();
   };
 
   const updateQuestionConfig = (
@@ -175,9 +559,9 @@ export default function TestBuilderPage() {
     field: "type" | "points",
     value: QuestionConfigValue,
   ) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) => {
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) => {
         if (q.id !== questionId) return q;
 
         if (field === "type" && value === "Single Choice" && q.type === "Multiple Choice") {
@@ -194,70 +578,119 @@ export default function TestBuilderPage() {
 
         return { ...q, [field]: value };
       }),
-    });
+    }));
+    markUnsaved();
   };
 
   const addQuestionTag = (questionId: string, tag: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) =>
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) =>
         q.id === questionId ? { ...q, tags: [...q.tags, tag] } : q,
       ),
-    });
+    }));
+    markUnsaved();
   };
 
   const removeQuestionTag = (questionId: string, tagToRemove: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) =>
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) =>
         q.id === questionId ? { ...q, tags: q.tags.filter((t) => t !== tagToRemove) } : q,
       ),
-    });
+    }));
+    markUnsaved();
   };
 
-  const addOption = (questionId: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) => {
-        if (q.id !== questionId) return q;
-        const newOption = {
-          id: `o${Date.now()}`,
-          text: `Option ${q.options.length + 1}`,
-          isCorrect: false,
-        };
-        return { ...q, options: [...q.options, newOption] };
-      }),
-    });
+  const addOption = async (questionId: string) => {
+    const question = testData.questions.find((item) => item.id === questionId);
+    if (!question || question.type === "Text Answer") return;
+
+    setSaveStatus("saving");
+    setSaveMessage("Creating option...");
+
+    try {
+      const response = await api.post<{ id: string; text: string; isCorrect: boolean }>("/options", {
+        questionId,
+        text: `Option ${question.options.length + 1}`,
+        isCorrect: false,
+      });
+      const newOption = {
+        id: response.data.id,
+        text: response.data.text,
+        isCorrect: response.data.isCorrect,
+      };
+
+      savedOptionSnapshotsRef.current.set(newOption.id, buildOptionSnapshot(newOption));
+      setTestData((currentTest) => ({
+        ...currentTest,
+        questions: currentTest.questions.map((q) =>
+          q.id === questionId ? { ...q, options: [...q.options, newOption] } : q,
+        ),
+      }));
+      setSaveStatus("saved");
+      setSaveMessage("Saved just now");
+    } catch {
+      setSaveStatus("error");
+      setSaveMessage("Could not create option");
+    }
   };
 
-  const removeOption = (questionId: string, optionId: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) => {
+  const removeOption = async (questionId: string, optionId: string) => {
+    const question = testData.questions.find((item) => item.id === questionId);
+    const optionToRemove = question?.options.find((option) => option.id === optionId);
+    if (!question || !optionToRemove || question.options.length <= 2) return;
+
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) => {
         if (q.id !== questionId) return q;
-        if (q.options.length <= 2) return q;
         return { ...q, options: q.options.filter((o) => o.id !== optionId) };
       }),
-    });
+    }));
+    setSaveStatus("saving");
+    setSaveMessage("Deleting option...");
+
+    try {
+      await api.delete(`/options/${optionId}`);
+      savedOptionSnapshotsRef.current.delete(optionId);
+      setSaveStatus("saved");
+      setSaveMessage("Saved just now");
+    } catch {
+      setTestData((currentTest) => ({
+        ...currentTest,
+        questions: currentTest.questions.map((q) =>
+          q.id === questionId ? { ...q, options: [...q.options, optionToRemove] } : q,
+        ),
+      }));
+      setSaveStatus("error");
+      setSaveMessage("Could not delete option");
+    }
   };
 
   const updateOptionText = (questionId: string, optionId: string, newText: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) => {
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) => {
         if (q.id !== questionId) return q;
         return {
           ...q,
           options: q.options.map((o) => (o.id === optionId ? { ...o, text: newText } : o)),
         };
       }),
-    });
+    }));
+    if (newText.trim().length === 0) {
+      setSaveStatus("error");
+      setSaveMessage("Option text is required");
+      return;
+    }
+    markUnsaved();
   };
 
   const toggleCorrectOption = (questionId: string, optionId: string) => {
-    setTestData({
-      ...testData,
-      questions: testData.questions.map((q) => {
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) => {
         if (q.id !== questionId) return q;
 
         const updatedOptions = q.options.map((o) => {
@@ -270,7 +703,8 @@ export default function TestBuilderPage() {
 
         return { ...q, options: updatedOptions };
       }),
-    });
+    }));
+    markUnsaved();
   };
 
   if (isLoading) {
@@ -302,6 +736,11 @@ export default function TestBuilderPage() {
         <BuilderHeader
           title={testData.title}
           onTitleChange={(e) => updateSetting("title", e.target.value)}
+          saveStatus={saveStatus}
+          saveMessage={saveMessage}
+          isPublished={isPublished}
+          isPublishing={isPublishing}
+          onTogglePublish={togglePublishTest}
         />
 
         <div className="bg-white border-b border-[#E2E8F0] px-5 md:px-8 flex justify-center">

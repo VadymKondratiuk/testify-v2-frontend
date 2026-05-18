@@ -86,6 +86,7 @@ function mapTestForTaking(test: BackendTestForTaking): TestData {
     title: test.title,
     description: test.description ?? "",
     category: test.category?.name ?? "Uncategorized",
+    categoryId: test.category?.id ?? "",
     passingScore: test.passingScore,
     timeLimit: test.timeLimit ?? 0,
     questions: test.questions

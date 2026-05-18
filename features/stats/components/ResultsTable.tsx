@@ -3,25 +3,30 @@
 
 import { ResultData } from "../stats.types";
 
-import { useState } from "react";
 import { Search } from "lucide-react";
+import Link from "next/link";
 
 interface ResultsTableProps {
   results: ResultData[];
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  isLoading?: boolean;
 }
 
-export function ResultsTable({ results }: ResultsTableProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+function getScoreBadgeClass(result: ResultData) {
+  if (result.status === "passed") {
+    return "bg-[#10B981]/10 text-[#10B981]";
+  }
 
-  const filteredResults = results.filter(res => 
-    res.student.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  return result.score >= 50 ? "bg-orange-100 text-orange-600" : "bg-[#EF4444]/10 text-[#EF4444]";
+}
 
+export function ResultsTable({ results, searchQuery, onSearchChange, isLoading = false }: ResultsTableProps) {
   return (
     <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden">
       <div className="px-6 py-5 border-b border-[#E2E8F0] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="font-[family-name:var(--font-sora)] font-bold text-[#0F172A] text-[1.1rem]">
-          All Results ({filteredResults.length})
+          All Results ({results.length})
         </h2>
         
         <div className="relative w-full md:w-72">
@@ -30,7 +35,7 @@ export function ResultsTable({ results }: ResultsTableProps) {
             type="text"
             placeholder="Search by student name..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#E2E8F0] text-[#0F172A] placeholder:text-[#64748B] text-[0.9rem] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all"
           />
         </div>
@@ -48,31 +53,36 @@ export function ResultsTable({ results }: ResultsTableProps) {
             </tr>
           </thead>
           <tbody className="text-[0.95rem]">
-            {filteredResults.length > 0 ? (
-              filteredResults.map((res) => (
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <tr key={index} className="border-b border-[#E2E8F0] last:border-0">
+                  <td className="px-6 py-4" colSpan={5}>
+                    <div className="h-5 w-full animate-pulse rounded bg-[#F1F5F9]" />
+                  </td>
+                </tr>
+              ))
+            ) : results.length > 0 ? (
+              results.map((res) => (
                 <tr key={res.id} className="border-b border-[#E2E8F0] last:border-0 hover:bg-[#F8FAFC]/50 transition-colors">
                   <td className="px-6 py-4 font-medium text-[#0F172A]">{res.student}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.8rem] font-bold ${
-                      res.score >= 80 ? 'bg-[#10B981]/10 text-[#10B981]' : 
-                      res.score >= 60 ? 'bg-orange-100 text-orange-600' : 'bg-[#EF4444]/10 text-[#EF4444]'
-                    }`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.8rem] font-bold ${getScoreBadgeClass(res)}`}>
                       {res.score}%
                     </span>
                   </td>
                   <td className="px-6 py-4 text-[#64748B]">{res.time}</td>
                   <td className="px-6 py-4 text-[#64748B] text-[0.9rem]">{res.date}</td>
                   <td className="px-6 py-4 text-right">
-                    <button className="cursor-pointer text-[#4F46E5] hover:text-[#4338CA] font-medium text-[0.9rem] transition-colors">
+                    <Link href={`/results/${res.id}`} className="cursor-pointer text-[#4F46E5] hover:text-[#4338CA] font-medium text-[0.9rem] transition-colors">
                       View Details
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center text-[#64748B]">
-                  No students found matching "{searchQuery}"
+                  No students found matching &quot;{searchQuery}&quot;
                 </td>
               </tr>
             )}

@@ -9,8 +9,6 @@ interface TestSettingsProps {
 }
 
 export function TestSettings({ data, onChange, categories = [] }: TestSettingsProps) {
-  const hasCurrentCategory = !data.category || categories.some((category) => category.name === data.category);
-
   return (
     <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-8 animate-in fade-in duration-300">
       <h2 className="font-[family-name:var(--font-sora)] font-bold text-[#0F172A] text-[1.3rem] mb-6">Test Settings</h2>
@@ -22,14 +20,17 @@ export function TestSettings({ data, onChange, categories = [] }: TestSettingsPr
           <label className="block text-[0.85rem] font-semibold text-[#334155] mb-2">Category</label>
           <div className="relative">
             <select 
-              value={data.category}
-              onChange={(e) => onChange("category", e.target.value)}
+              value={data.categoryId}
+              onChange={(e) => {
+                const selectedCategory = categories.find((category) => category.id === e.target.value);
+                onChange("categoryId", e.target.value);
+                onChange("category", selectedCategory?.name ?? "");
+              }}
               className="appearance-none cursor-pointer w-full pl-4 pr-11 py-3 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors"
             >
-              <option value="" disabled>Select a category...</option>
-              {!hasCurrentCategory && <option value={data.category}>{data.category}</option>}
+              <option value="">Select a category...</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.name}>
+                <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               ))}

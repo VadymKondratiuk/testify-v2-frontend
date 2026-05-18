@@ -142,6 +142,7 @@ function mapAttempt(attempt: BackendAttempt) {
     title: attempt.test.title,
     description: attempt.test.description ?? "",
     category: attempt.test.category?.name ?? "Uncategorized",
+    categoryId: attempt.test.category?.id ?? "",
     passingScore: attempt.passingScore,
     timeLimit: attempt.test.timeLimit ?? 0,
     questions,

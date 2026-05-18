@@ -26,8 +26,8 @@ export const toughestQuestions = [
 ];
 
 export const allResults: ResultData[] = [
-  { id: 1, student: "Oleksandr K.", score: 95, time: "12m", date: "Today, 10:23 AM", status: "passed" },
-  { id: 2, student: "Mariia L.", score: 60, time: "20m", date: "Yesterday", status: "failed" },
-  { id: 3, student: "Vadym T.", score: 82, time: "15m", date: "2 days ago", status: "passed" },
-  { id: 4, student: "Anna P.", score: 100, time: "9m", date: "3 days ago", status: "passed" },
+  { id: "1", student: "Oleksandr K.", score: 95, time: "12m", date: "Today, 10:23 AM", status: "passed" },
+  { id: "2", student: "Mariia L.", score: 60, time: "20m", date: "Yesterday", status: "failed" },
+  { id: "3", student: "Vadym T.", score: 82, time: "15m", date: "2 days ago", status: "passed" },
+  { id: "4", student: "Anna P.", score: 100, time: "9m", date: "3 days ago", status: "passed" },
 ];

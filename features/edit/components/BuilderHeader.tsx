@@ -1,13 +1,42 @@
 // src/components/creator-studio/BuilderHeader.tsx
 import Link from "next/link";
-import { ArrowLeft, Cloud, Eye, CheckCircle2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Cloud, Eye, Loader2 } from "lucide-react";
+
+type SaveStatus = "saved" | "unsaved" | "saving" | "error";
 
 interface BuilderHeaderProps {
   title: string;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  saveStatus: SaveStatus;
+  saveMessage: string;
+  isPublished: boolean;
+  isPublishing: boolean;
+  onTogglePublish: () => void;
 }
 
-export function BuilderHeader({ title, onTitleChange }: BuilderHeaderProps) {
+const saveStatusStyles: Record<SaveStatus, string> = {
+  saved: "text-[#64748B]",
+  unsaved: "text-[#D97706]",
+  saving: "text-[#4F46E5]",
+  error: "text-[#EF4444]",
+};
+
+const saveStatusIcons: Record<SaveStatus, React.ReactNode> = {
+  saved: <Cloud size={12} />,
+  unsaved: <AlertCircle size={12} />,
+  saving: <Loader2 size={12} className="animate-spin" />,
+  error: <AlertCircle size={12} />,
+};
+
+export function BuilderHeader({
+  title,
+  onTitleChange,
+  saveStatus,
+  saveMessage,
+  isPublished,
+  isPublishing,
+  onTogglePublish,
+}: BuilderHeaderProps) {
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-[#E2E8F0] px-5 md:px-8 py-4 flex items-center justify-between shadow-sm">
 {/* ДОДАНО: flex-1, щоб ліва частина зайняла весь вільний простір */}
@@ -24,9 +53,9 @@ export function BuilderHeader({ title, onTitleChange }: BuilderHeaderProps) {
             onChange={onTitleChange}
             className="font-[family-name:var(--font-sora)] text-[1.2rem] font-bold text-[#0F172A] bg-transparent focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 rounded px-1 -ml-1 border border-transparent hover:border-[#E2E8F0] transition-colors w-full truncate"
           />
-          <div className="flex items-center gap-1.5 text-[0.75rem] text-[#64748B] mt-0.5 px-1">
-            <Cloud size={12} />
-            Saved to cloud just now
+          <div className={`flex items-center gap-1.5 text-[0.75rem] mt-0.5 px-1 ${saveStatusStyles[saveStatus]}`}>
+            {saveStatusIcons[saveStatus]}
+            {saveMessage}
           </div>
         </div>
 
@@ -37,9 +66,14 @@ export function BuilderHeader({ title, onTitleChange }: BuilderHeaderProps) {
           <Eye size={16} />
           Preview
         </button>
-        <button className="cursor-pointer flex items-center gap-2 px-5 py-2 text-[0.9rem] font-semibold text-white bg-[#4F46E5] hover:bg-[#4338CA] rounded-xl transition-all shadow-[0_4px_12px_rgba(79,70,229,0.25)] hover:-translate-y-0.5">
-          <CheckCircle2 size={16} />
-          Publish Test
+        <button
+          type="button"
+          onClick={onTogglePublish}
+          disabled={isPublishing}
+          className="cursor-pointer flex items-center gap-2 px-5 py-2 text-[0.9rem] font-semibold text-white bg-[#4F46E5] hover:bg-[#4338CA] rounded-xl transition-all shadow-[0_4px_12px_rgba(79,70,229,0.25)] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-[#4F46E5]"
+        >
+          {isPublishing ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+          {isPublishing ? "Updating..." : isPublished ? "Unpublish Test" : "Publish Test"}
         </button>
       </div>
     </header>

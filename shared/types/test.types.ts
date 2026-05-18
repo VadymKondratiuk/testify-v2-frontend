@@ -9,7 +9,7 @@ export interface Question {
   type: "Single Choice" | "Multiple Choice" | "Text Answer";
   points: number;
   text: string;
-  tags: string[]; // 👈 Додали масив тегів
+  tags: string[];
   options: Option[];
 }
 
@@ -17,7 +17,8 @@ export interface TestData {
   id: string;
   title: string;
   description: string;
-  category: string; // 👈 Додали категорію
+  category: string;
+  categoryId: string;
   passingScore: number;
   timeLimit: number | string;
   questions: Question[];
