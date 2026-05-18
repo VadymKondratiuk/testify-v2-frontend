@@ -21,15 +21,23 @@ export async function POST() {
     return response;
   }
 
-  const backendResponse = await fetch(getBackendAuthUrl("/refresh"), {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${refreshToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ refreshToken }),
-    cache: "no-store",
-  });
+  let backendResponse: Response;
+
+  try {
+    backendResponse = await fetch(getBackendAuthUrl("/refresh"), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refreshToken }),
+      cache: "no-store",
+    });
+  } catch {
+    const response = jsonError("Unable to refresh session.", 503);
+    clearAuthCookies(response);
+    return response;
+  }
 
   const data = (await backendResponse.json().catch(() => null)) as BackendAuthResponse | { message?: string } | null;
 

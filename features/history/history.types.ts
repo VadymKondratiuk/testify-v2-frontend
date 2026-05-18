@@ -12,4 +12,5 @@ export interface HistoryItem {
   correctAnswers: number;
   timeSpent: string;
   status: HistoryStatus;
+  completedAt: string;
 }

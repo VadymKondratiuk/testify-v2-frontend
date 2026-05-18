@@ -1,5 +1,6 @@
 // src/components/history/HistoryCard.tsx
 import { CheckCircle2, XCircle, Calendar, Clock, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { HistoryItem } from "@/features/history/history.types";
 
 interface HistoryCardProps {
@@ -60,9 +61,9 @@ export function HistoryCard({ test }: HistoryCardProps) {
           </span>
         </div>
 
-        <button className="cursor-pointer whitespace-nowrap flex items-center gap-1.5 bg-[#EEF2FF] text-[#4F46E5] hover:bg-[#E0E7FF] hover:text-[#4338CA] px-4 py-2 rounded-lg font-medium text-[0.85rem] transition-colors">
+        <Link href={`/results/${test.id}`} className="cursor-pointer whitespace-nowrap flex items-center gap-1.5 bg-[#EEF2FF] text-[#4F46E5] hover:bg-[#E0E7FF] hover:text-[#4338CA] px-4 py-2 rounded-lg font-medium text-[0.85rem] transition-colors">
           View Details <ChevronRight size={16} />
-        </button>
+        </Link>
       </div>
     </div>
   );
