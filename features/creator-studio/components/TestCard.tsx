@@ -1,42 +1,43 @@
 // src/components/creator-studio/TestCard.tsx
 import Link from "next/link";
 import { 
-  MoreVertical, FileText, Users, Edit3, BarChart2, Trash2, CheckCircle2, Clock, Archive 
+  MoreVertical, FileText, Users, Edit3, BarChart2, Trash2, CheckCircle2, Clock
 } from "lucide-react";
-import { TestSummary } from "@/features/creator-studio/creator-studio.types";
+import { TestStatus, TestSummary } from "@/features/creator-studio/creator-studio.types";
 
-const getStatusStyles = (status: string) => {
+const statusLabels: Record<TestStatus, string> = {
+  published: "Published",
+  draft: "Unpublished",
+};
+
+const getStatusStyles = (status: TestStatus) => {
   switch (status) {
     case 'published': return 'bg-green-50 text-[#10B981]';
     case 'draft': return 'bg-[#FFFBEB] text-[#D97706]';
-    case 'closed': return 'bg-[#F1F5F9] text-[#64748B]';
-    default: return 'bg-gray-50 text-gray-500';
   }
 };
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: TestStatus) => {
   switch (status) {
     case 'published': return <CheckCircle2 size={14} />;
     case 'draft': return <Clock size={14} />;
-    case 'closed': return <Archive size={14} />;
-    default: return null;
   }
 };
 
 interface TestCardProps {
   test: TestSummary;
+  isDeleting?: boolean;
+  onDelete: (test: TestSummary) => void;
 }
 
-export function TestCard({ test }: TestCardProps) {
-  const showAnalytics = test.status === 'published' || test.status === 'closed';
-
+export function TestCard({ test, isDeleting = false, onDelete }: TestCardProps) {
   return (
     <div className="group bg-white rounded-2xl border border-[#E2E8F0] shadow-sm hover:shadow-md hover:border-[#CBD5E1] transition-all flex flex-col">
       {/* Card Header */}
       <div className="p-5 pb-0 flex items-center justify-between">
         <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[0.75rem] font-bold uppercase tracking-wider ${getStatusStyles(test.status)}`}>
           {getStatusIcon(test.status)}
-          {test.status}
+          {statusLabels[test.status]}
         </div>
         
         <button className="text-[#94A3B8] hover:text-[#0F172A] transition-colors p-1 rounded-md hover:bg-[#F1F5F9]">
@@ -55,12 +56,10 @@ export function TestCard({ test }: TestCardProps) {
             <FileText size={16} className="text-[#94A3B8]" />
             <span>{test.questionsCount} questions</span>
           </div>
-          {showAnalytics && (
-            <div className="flex items-center gap-1.5">
-              <Users size={16} className="text-[#94A3B8]" />
-              <span>{test.completions} taken</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5">
+            <Users size={16} className="text-[#94A3B8]" />
+            <span>{test.completions} taken</span>
+          </div>
         </div>
       </div>
 
@@ -75,18 +74,22 @@ export function TestCard({ test }: TestCardProps) {
             Edit
           </Link>
           
-          {showAnalytics && (
-            <Link 
-              href={`/creator-studio/${test.id}/stats`}
-              className="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-[0.85rem] font-medium text-[#64748B] hover:text-[#0F172A] hover:bg-[#E2E8F0]/50 rounded-lg transition-colors"
-            >
-              <BarChart2 size={15} />
-              Stats
-            </Link>
-          )}
+          <Link 
+            href={`/creator-studio/${test.id}/stats`}
+            className="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-[0.85rem] font-medium text-[#64748B] hover:text-[#0F172A] hover:bg-[#E2E8F0]/50 rounded-lg transition-colors"
+          >
+            <BarChart2 size={15} />
+            Stats
+          </Link>
         </div>
         
-        <button className="cursor-pointer p-2 text-[#94A3B8] hover:text-[#EF4444] hover:bg-red-50 rounded-lg transition-colors" title="Delete Test">
+        <button
+          type="button"
+          onClick={() => onDelete(test)}
+          disabled={isDeleting}
+          className="cursor-pointer p-2 text-[#94A3B8] hover:text-[#EF4444] hover:bg-red-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          title="Delete Test"
+        >
           <Trash2 size={16} />
         </button>
       </div>

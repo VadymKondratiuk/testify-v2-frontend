@@ -9,6 +9,7 @@ interface TestSidebarProps {
   answeredCount: number;
   onNavigate: (index: number) => void;
   onSubmit: () => void;
+  isSubmitting?: boolean;
 }
 
 export const TestSidebar = ({
@@ -19,6 +20,7 @@ export const TestSidebar = ({
   answeredCount,
   onNavigate,
   onSubmit,
+  isSubmitting = false,
 }: TestSidebarProps) => {
   const hasAnswered = (answer: string | string[] | undefined) => {
     return Array.isArray(answer) ? answer.length > 0 : Boolean(answer);
@@ -69,10 +71,11 @@ export const TestSidebar = ({
       <button
         type="button"
         onClick={onSubmit}
-        className="cursor-pointer mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F172A] px-5 py-3 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#1E293B] lg:mt-auto"
+        disabled={isSubmitting}
+        className="cursor-pointer mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F172A] px-5 py-3 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#1E293B] disabled:cursor-not-allowed disabled:opacity-60 lg:mt-auto"
       >
         <Send size={18} />
-        Submit Test
+        {isSubmitting ? "Submitting..." : "Submit Test"}
       </button>
     </aside>
   );

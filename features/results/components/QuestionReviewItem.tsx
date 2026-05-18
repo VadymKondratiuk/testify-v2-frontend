@@ -50,8 +50,18 @@ export const QuestionReviewItem = ({ index, question, resultAnswer }: QuestionRe
         </div>
       </div>
 
-      <div className="grid gap-3">
-        {question.options.map((option) => {
+      {question.type === "Text Answer" ? (
+        <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+          <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-[#64748B]">
+            Your answer
+          </p>
+          <p className="whitespace-pre-wrap text-[0.95rem] leading-relaxed text-[#334155]">
+            {answerData.textAnswer || "No answer provided."}
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {question.options.map((option) => {
           const state = getOptionState(option, answerData.selectedOptionIds);
 
           return (
@@ -67,8 +77,9 @@ export const QuestionReviewItem = ({ index, question, resultAnswer }: QuestionRe
               )}
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
     </article>
   );
 };

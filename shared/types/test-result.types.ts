@@ -1,6 +1,7 @@
 export interface TestResultAnswer {
   questionId: string;
   selectedOptionIds: string[];
+  textAnswer?: string;
   earnedPoints: number;
 }
 

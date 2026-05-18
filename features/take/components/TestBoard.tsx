@@ -8,9 +8,11 @@ interface TestBoardProps {
   timeLeft: number;
   answers: Record<string, string | string[]>;
   onOptionSelect: (question: Question, optionId: string) => void;
+  onTextAnswerChange: (question: Question, value: string) => void;
   onPrev: () => void;
   onNext: () => void;
   onSubmit: () => void;
+  isSubmitting?: boolean;
 }
 
 export const TestBoard = ({
@@ -20,9 +22,11 @@ export const TestBoard = ({
   timeLeft,
   answers,
   onOptionSelect,
+  onTextAnswerChange,
   onPrev,
   onNext,
   onSubmit,
+  isSubmitting = false,
 }: TestBoardProps) => {
   const isFirstQuestion = currentIndex === 0;
   const isLastQuestion = currentIndex === totalQuestions - 1;
@@ -40,6 +44,8 @@ export const TestBoard = ({
     }
     return answer === optionId;
   };
+
+  const textAnswer = typeof answers[question.id] === "string" ? answers[question.id] : "";
 
   return (
     <main className="flex h-fit min-w-0 flex-1 flex-col rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
@@ -76,8 +82,23 @@ export const TestBoard = ({
           {question.text}
         </h2>
 
-        <div className="flex max-w-3xl flex-col gap-3">
-          {question.options.map((option) => {
+        {question.type === "Text Answer" ? (
+          <div className="max-w-3xl">
+            <textarea
+              value={textAnswer}
+              onChange={(event) => onTextAnswerChange(question, event.target.value)}
+              maxLength={5000}
+              rows={8}
+              className="min-h-48 w-full resize-y rounded-xl border border-[#E2E8F0] bg-white p-4 text-[1rem] leading-relaxed text-[#334155] outline-none transition-colors placeholder:text-[#94A3B8] focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
+              placeholder="Type your answer here..."
+            />
+            <div className="mt-2 text-right text-[0.78rem] font-medium text-[#64748B]">
+              {textAnswer.length}/5000
+            </div>
+          </div>
+        ) : (
+          <div className="flex max-w-3xl flex-col gap-3">
+            {question.options.map((option) => {
             const isSelected = isOptionSelected(option.id);
             const isMultipleChoice = question.type === "Multiple Choice";
             const InactiveIcon = isMultipleChoice ? Square : Circle;
@@ -106,8 +127,9 @@ export const TestBoard = ({
                 </span>
               </button>
             );
-          })}
-        </div>
+            })}
+          </div>
+        )}
       </section>
 
       <footer className="flex items-center justify-between gap-3 border-t border-[#E2E8F0] px-5 py-4 md:px-8">
@@ -125,9 +147,10 @@ export const TestBoard = ({
           <button
             type="button"
             onClick={onSubmit}
-            className="cursor-pointer flex items-center gap-2 rounded-xl bg-[#0F172A] px-5 py-3 text-[0.9rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#1E293B] sm:px-6"
+            disabled={isSubmitting}
+            className="cursor-pointer flex items-center gap-2 rounded-xl bg-[#0F172A] px-5 py-3 text-[0.9rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#1E293B] disabled:cursor-not-allowed disabled:opacity-60 sm:px-6"
           >
-            Submit Test
+            {isSubmitting ? "Submitting..." : "Submit Test"}
             <Send size={18} />
           </button>
         ) : (

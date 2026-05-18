@@ -6,7 +6,7 @@ export interface Option {
 
 export interface Question {
   id: string;
-  type: "Single Choice" | "Multiple Choice";
+  type: "Single Choice" | "Multiple Choice" | "Text Answer";
   points: number;
   text: string;
   tags: string[]; // 👈 Додали масив тегів

@@ -21,6 +21,14 @@ export function formatDate(value: string) {
 export type QuestionStatus = "correct" | "incorrect" | "partial" | "unanswered";
 
 export function getQuestionStatus(question: Question, resultAnswer?: TestResultAnswer): QuestionStatus {
+  if (question.type === "Text Answer") {
+    if (!resultAnswer?.textAnswer?.trim()) {
+      return "unanswered";
+    }
+
+    return resultAnswer.earnedPoints === question.points ? "correct" : "incorrect";
+  }
+
   if (!resultAnswer || resultAnswer.selectedOptionIds.length === 0) {
     return "unanswered";
   }
