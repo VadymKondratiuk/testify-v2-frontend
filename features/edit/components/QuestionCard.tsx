@@ -8,7 +8,7 @@ interface QuestionCardProps {
   index: number;
   onRemove: (id: string) => void;
   onUpdateText: (id: string, text: string) => void;
-  onUpdateConfig: (id: string, field: "type" | "points", value: any) => void;
+  onUpdateConfig: (id: string, field: "type" | "points", value: Question["type"] | number) => void;
   onAddOption: (questionId: string) => void;
   onRemoveOption: (questionId: string, optionId: string) => void;
   onUpdateOptionText: (questionId: string, optionId: string, text: string) => void;
@@ -98,28 +98,33 @@ export function QuestionCard({
           </div>
         </div>
 
-        {/* Options List */}
-        <div className="flex flex-col gap-3 pl-8">
-          {question.options.map((option) => (
-            <OptionRow 
-              key={option.id} 
-              text={option.text} 
-              isCorrect={option.isCorrect} 
-              inputType={question.type === "Single Choice" ? "radio" : "checkbox"} 
-              canRemove={question.options.length > 2}
-              onTextChange={(newText: string) => onUpdateOptionText(question.id, option.id, newText)}
-              onToggleCorrect={() => onToggleCorrect(question.id, option.id)}
-              onRemove={() => onRemoveOption(question.id, option.id)}
-            />
-          ))}
-          
-          <button 
-            onClick={() => onAddOption(question.id)}
-            className="cursor-pointer flex items-center gap-2 text-[#4F46E5] font-medium text-[0.9rem] hover:underline w-fit mt-2"
-          >
-            <Plus size={16} /> Add Option
-          </button>
-        </div>
+        {question.type === "Text Answer" ? (
+          <div className="ml-8 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] px-4 py-3 text-[0.9rem] font-medium text-[#64748B]">
+            Students will type their answer manually.
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 pl-8">
+            {question.options.map((option) => (
+              <OptionRow 
+                key={option.id} 
+                text={option.text} 
+                isCorrect={option.isCorrect} 
+                inputType={question.type === "Single Choice" ? "radio" : "checkbox"} 
+                canRemove={question.options.length > 2}
+                onTextChange={(newText: string) => onUpdateOptionText(question.id, option.id, newText)}
+                onToggleCorrect={() => onToggleCorrect(question.id, option.id)}
+                onRemove={() => onRemoveOption(question.id, option.id)}
+              />
+            ))}
+            
+            <button 
+              onClick={() => onAddOption(question.id)}
+              className="cursor-pointer flex items-center gap-2 text-[#4F46E5] font-medium text-[0.9rem] hover:underline w-fit mt-2"
+            >
+              <Plus size={16} /> Add Option
+            </button>
+          </div>
+        )}
       </div>
       
       {/* Footer Settings */}
@@ -127,11 +132,12 @@ export function QuestionCard({
         <div className="flex items-center gap-4">
           <select 
             value={question.type}
-            onChange={(e) => onUpdateConfig(question.id, "type", e.target.value)}
+            onChange={(e) => onUpdateConfig(question.id, "type", e.target.value as Question["type"])}
             className="cursor-pointer bg-white border border-[#E2E8F0] text-[#334155] text-[0.85rem] font-medium rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
           >
             <option value="Single Choice">Single Choice</option>
             <option value="Multiple Choice">Multiple Choice</option>
+            <option value="Text Answer">Text Answer</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
@@ -150,7 +156,17 @@ export function QuestionCard({
 }
 
 // Мікро-компонент залишається тут, бо він належить тільки QuestionCard
-function OptionRow({ text, isCorrect, inputType, canRemove, onTextChange, onToggleCorrect, onRemove }: any) {
+interface OptionRowProps {
+  text: string;
+  isCorrect: boolean;
+  inputType: "radio" | "checkbox";
+  canRemove: boolean;
+  onTextChange: (text: string) => void;
+  onToggleCorrect: () => void;
+  onRemove: () => void;
+}
+
+function OptionRow({ text, isCorrect, inputType, canRemove, onTextChange, onToggleCorrect, onRemove }: OptionRowProps) {
   return (
     <div className="flex items-center gap-3 group/option">
       <button 

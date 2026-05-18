@@ -22,3 +22,8 @@ export interface TestData {
   timeLimit: number | string;
   questions: Question[];
 }
+
+export interface CategoryOption {
+  id: string;
+  name: string;
+}

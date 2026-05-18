@@ -1,13 +1,16 @@
 // src/components/creator-studio/TestSettings.tsx
-import { TestData } from "@/shared/types/test.types";
+import { CategoryOption, TestData } from "@/shared/types/test.types";
 import { ChevronDown } from "lucide-react";
 
 interface TestSettingsProps {
   data: TestData;
-  onChange: (field: keyof TestData, value: any) => void;
+  onChange: (field: keyof TestData, value: TestData[keyof TestData]) => void;
+  categories?: CategoryOption[];
 }
 
-export function TestSettings({ data, onChange }: TestSettingsProps) {
+export function TestSettings({ data, onChange, categories = [] }: TestSettingsProps) {
+  const hasCurrentCategory = !data.category || categories.some((category) => category.name === data.category);
+
   return (
     <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-8 animate-in fade-in duration-300">
       <h2 className="font-[family-name:var(--font-sora)] font-bold text-[#0F172A] text-[1.3rem] mb-6">Test Settings</h2>
@@ -24,11 +27,12 @@ export function TestSettings({ data, onChange }: TestSettingsProps) {
               className="appearance-none cursor-pointer w-full pl-4 pr-11 py-3 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors"
             >
               <option value="" disabled>Select a category...</option>
-              <option value="Programming">Programming</option>
-              <option value="Design">Design</option>
-              <option value="Business">Business</option>
-              <option value="Languages">Languages</option>
-              <option value="Other">Other</option>
+              {!hasCurrentCategory && <option value={data.category}>{data.category}</option>}
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             
             {/* Наша кастомна іконка */}
