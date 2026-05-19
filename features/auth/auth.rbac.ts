@@ -13,11 +13,13 @@ export const SIGNED_ROLE_COOKIE_NAME = "testify_role_sig";
 export const LEGACY_ROLE_COOKIE_NAME = "testify_role";
 
 export const AUTHENTICATED_ROLES: readonly Role[] = ROLES;
-export const CREATOR_STUDIO_ROLES: readonly Role[] = ["TEACHER", "ADMIN"];
+export const CREATOR_STUDIO_ROLES: readonly Role[] = ["TEACHER"];
+export const ADMIN_ROLES: readonly Role[] = ["ADMIN"];
 
 const GUEST_ONLY_PATHS = ["/login", "/register"] as const;
 const AUTHENTICATED_PATH_PREFIXES = ["/profile", "/settings", "/history", "/results"] as const;
 const CREATOR_PATH_PREFIXES = ["/creator-studio"] as const;
+const ADMIN_PATH_PREFIXES = ["/admin"] as const;
 const TAKE_TEST_PATH_PATTERN = /^\/tests\/[^/]+\/take(?:\/.*)?$/;
 
 export function normalizeRole(value: string | null | undefined): Role | null {
@@ -36,6 +38,10 @@ export function isGuestOnlyPath(pathname: string) {
 }
 
 export function getRequiredRoles(pathname: string): readonly Role[] | null {
+  if (ADMIN_PATH_PREFIXES.some((path) => isPathMatch(pathname, path))) {
+    return ADMIN_ROLES;
+  }
+
   if (CREATOR_PATH_PREFIXES.some((path) => isPathMatch(pathname, path))) {
     return CREATOR_STUDIO_ROLES;
   }
@@ -67,6 +73,7 @@ export function canAccessPath(session: AuthSession, pathname: string) {
 }
 
 export function getPostLoginRedirect(role: Role | null) {
+  if (role === "ADMIN") return "/admin";
   if (role === "TEACHER") return "/creator-studio";
   return "/profile";
 }

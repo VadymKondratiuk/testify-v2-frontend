@@ -1,0 +1,118 @@
+import type { AdminCategory, AdminTest, AdminUser } from "./admin.types";
+
+export const adminUsers: AdminUser[] = [
+  {
+    id: "usr-1",
+    name: "Olena Koval",
+    email: "olena.koval@testify.dev",
+    role: "ADMIN",
+    status: "active",
+    testsCreated: 12,
+    attempts: 34,
+    joinedAt: "May 12, 2026",
+  },
+  {
+    id: "usr-2",
+    name: "Maksym Petrenko",
+    email: "m.petrenko@testify.dev",
+    role: "TEACHER",
+    status: "active",
+    testsCreated: 8,
+    attempts: 18,
+    joinedAt: "May 04, 2026",
+  },
+  {
+    id: "usr-3",
+    name: "Iryna Levchuk",
+    email: "iryna.levchuk@testify.dev",
+    role: "STUDENT",
+    status: "blocked",
+    testsCreated: 0,
+    attempts: 27,
+    joinedAt: "Apr 29, 2026",
+  },
+  {
+    id: "usr-4",
+    name: "Dmytro Savchuk",
+    email: "d.savchuk@testify.dev",
+    role: "TEACHER",
+    status: "active",
+    testsCreated: 5,
+    attempts: 11,
+    joinedAt: "Apr 18, 2026",
+  },
+];
+
+export const adminTests: AdminTest[] = [
+  {
+    id: "test-1",
+    title: "JavaScript Fundamentals",
+    author: "Maksym Petrenko",
+    category: "Programming",
+    status: "published",
+    questionsCount: 24,
+    completions: 186,
+    updatedAt: "today, 11:40",
+  },
+  {
+    id: "test-2",
+    title: "English Grammar B1",
+    author: "Dmytro Savchuk",
+    category: "Languages",
+    status: "unpublished",
+    questionsCount: 18,
+    completions: 0,
+    updatedAt: "yesterday, 19:12",
+  },
+  {
+    id: "test-3",
+    title: "World History: The 20th Century",
+    author: "Olena Koval",
+    category: "History",
+    status: "archived",
+    questionsCount: 30,
+    completions: 92,
+    updatedAt: "May 15, 2026",
+  },
+  {
+    id: "test-4",
+    title: "SQL for Beginners",
+    author: "Maksym Petrenko",
+    category: "Databases",
+    status: "published",
+    questionsCount: 20,
+    completions: 74,
+    updatedAt: "May 11, 2026",
+  },
+];
+
+export const adminCategories: AdminCategory[] = [
+  {
+    id: "cat-1",
+    name: "Programming",
+    testsCount: 34,
+    status: "active",
+    updatedAt: "today",
+  },
+  {
+    id: "cat-2",
+    name: "Languages",
+    testsCount: 19,
+    status: "active",
+    updatedAt: "May 16, 2026",
+  },
+  {
+    id: "cat-3",
+    name: "History",
+    testsCount: 11,
+    status: "active",
+    updatedAt: "May 10, 2026",
+  },
+  {
+    id: "cat-4",
+    name: "Legacy categories",
+    testsCount: 0,
+    status: "hidden",
+    updatedAt: "May 02, 2026",
+  },
+];

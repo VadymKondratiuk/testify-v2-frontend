@@ -60,5 +60,6 @@ export const config = {
     "/results/:path*",
     "/tests/:id/take/:path*",
     "/creator-studio/:path*",
+    "/admin/:path*",
   ],
 };

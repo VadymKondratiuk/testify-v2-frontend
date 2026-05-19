@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, UserCircle } from "lucide-react";
 import {
+  ADMIN_ROLES,
   CREATOR_STUDIO_ROLES,
   canRoleAccess,
 } from "@/features/auth/auth.rbac";
@@ -15,11 +16,8 @@ const publicNavItems = [
   { label: "Catalog", href: "/catalog" },
 ] as const;
 
-const authenticatedNavItems = [
-  { label: "Profile", href: "/profile" },
-] as const;
-
 const creatorNavItem = { label: "Creator Studio", href: "/creator-studio" } as const;
+const adminNavItem = { label: "Admin Panel", href: "/admin" } as const;
 
 export default function Header() {
   const pathname = usePathname();
@@ -31,8 +29,8 @@ export default function Header() {
 
   const navItems = [
     ...publicNavItems,
-    ...(isAuthenticated ? authenticatedNavItems : []),
     ...(canRoleAccess(user?.role ?? null, CREATOR_STUDIO_ROLES) ? [creatorNavItem] : []),
+    ...(canRoleAccess(user?.role ?? null, ADMIN_ROLES) ? [adminNavItem] : []),
   ];
 
   const handleLogout = async () => {
@@ -44,32 +42,34 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-[200] h-[70px] flex items-center justify-between gap-6 px-12 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
-      <Link
-        href="/"
-        className="font-['Sora',sans-serif] font-extrabold text-2xl tracking-[-0.04em] text-indigo-600 no-underline flex-shrink-0 after:content-['.'] after:text-amber-400"
-      >
-        Testify
-      </Link>
+      <div className="flex items-center gap-8">
+        <Link
+          href="/catalog"
+          className="font-['Sora',sans-serif] font-extrabold text-2xl tracking-[-0.04em] text-indigo-600 no-underline flex-shrink-0 after:content-['.'] after:text-amber-400"
+        >
+          Testify
+        </Link>
 
-      <nav className="flex items-center gap-0.5">
-        {navItems.map(({ label, href }) => {
-          const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
+        <nav className="flex items-center gap-1">
+          {navItems.map(({ label, href }) => {
+            const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
 
-          return (
-            <Link
-              key={label}
-              href={href}
-              className={`font-medium text-[0.9rem] px-4 py-2 rounded-md transition-colors duration-200 no-underline ${
-                isActive
-                  ? "text-indigo-600 bg-indigo-50 font-semibold"
-                  : "text-slate-700 hover:text-indigo-600 hover:bg-indigo-50"
-              }`}
-            >
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
+            return (
+              <Link
+                key={label}
+                href={href}
+                className={`font-medium text-[0.9rem] px-3.5 py-2 rounded-md transition-colors duration-200 no-underline ${
+                  isActive
+                    ? "text-indigo-600 bg-indigo-50 font-semibold"
+                    : "text-slate-700 hover:text-indigo-600 hover:bg-indigo-50"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
       <div className="flex min-w-[185px] items-center justify-end gap-2.5">
         {!isAuthReady ? (
