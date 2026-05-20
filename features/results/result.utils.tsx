@@ -33,18 +33,8 @@ export function getQuestionStatus(question: Question, resultAnswer?: TestResultA
     return "unanswered";
   }
 
-  const correctOptionIds = question.options.filter((o) => o.isCorrect).map((o) => o.id);
-  const selectedOptionIds = resultAnswer.selectedOptionIds;
-
-  const isPerfectMatch =
-    correctOptionIds.length === selectedOptionIds.length &&
-    correctOptionIds.every((id) => selectedOptionIds.includes(id));
-
-  if (isPerfectMatch) return "correct";
-
-  const hasSomeCorrect = selectedOptionIds.some((id) => correctOptionIds.includes(id));
-  
-  if (hasSomeCorrect) return "partial";
+  if (resultAnswer.earnedPoints >= question.points) return "correct";
+  if (resultAnswer.earnedPoints > 0) return "partial";
 
   return "incorrect";
 }

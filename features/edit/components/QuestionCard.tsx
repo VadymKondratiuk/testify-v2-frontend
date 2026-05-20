@@ -9,6 +9,10 @@ interface QuestionCardProps {
   onRemove: (id: string) => void;
   onUpdateText: (id: string, text: string) => void;
   onUpdateConfig: (id: string, field: "type" | "points", value: Question["type"] | number) => void;
+  onUpdateCorrectTextAnswer: (id: string, correctTextAnswer: string) => void;
+  onAddAcceptedTextAnswer: (id: string) => void;
+  onUpdateAcceptedTextAnswer: (id: string, index: number, value: string) => void;
+  onRemoveAcceptedTextAnswer: (id: string, index: number) => void;
   onAddOption: (questionId: string) => void;
   onRemoveOption: (questionId: string, optionId: string) => void;
   onUpdateOptionText: (questionId: string, optionId: string, text: string) => void;
@@ -19,7 +23,8 @@ interface QuestionCardProps {
 
 export function QuestionCard({
   question, index, onRemove, onUpdateText, onUpdateConfig,
-  onAddOption, onRemoveOption, onUpdateOptionText, onToggleCorrect,
+  onUpdateCorrectTextAnswer, onAddAcceptedTextAnswer, onUpdateAcceptedTextAnswer,
+  onRemoveAcceptedTextAnswer, onAddOption, onRemoveOption, onUpdateOptionText, onToggleCorrect,
   onAddTag, onRemoveTag
 }: QuestionCardProps) {
 
@@ -99,8 +104,49 @@ export function QuestionCard({
         </div>
 
         {question.type === "Text Answer" ? (
-          <div className="ml-8 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] px-4 py-3 text-[0.9rem] font-medium text-[#64748B]">
-            Students will type their answer manually.
+          <div className="ml-8 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+            <label className="mb-2 block text-[0.78rem] font-bold uppercase tracking-[0.06em] text-[#64748B]">
+              Correct answer
+            </label>
+            <input
+              type="text"
+              value={question.correctTextAnswer ?? ""}
+              onChange={(e) => onUpdateCorrectTextAnswer(question.id, e.target.value)}
+              placeholder="Correct text answer"
+              className="w-full rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 text-[0.95rem] font-medium text-[#0F172A] placeholder-[#94A3B8] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+            />
+            <div className="mt-4 flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[0.78rem] font-bold uppercase tracking-[0.06em] text-[#64748B]">
+                  Accepted alternatives
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onAddAcceptedTextAnswer(question.id)}
+                  className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-[#C7D2FE] bg-white px-2.5 py-1.5 text-[0.8rem] font-semibold text-[#4F46E5] transition-colors hover:bg-[#EEF2FF]"
+                >
+                  <Plus size={14} /> Add
+                </button>
+              </div>
+              {(question.acceptedTextAnswers ?? []).map((acceptedAnswer, acceptedIndex) => (
+                <div key={acceptedIndex} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={acceptedAnswer}
+                    onChange={(e) => onUpdateAcceptedTextAnswer(question.id, acceptedIndex, e.target.value)}
+                    placeholder="Alternative accepted answer"
+                    className="min-w-0 flex-1 rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 text-[0.9rem] font-medium text-[#0F172A] placeholder-[#94A3B8] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onRemoveAcceptedTextAnswer(question.id, acceptedIndex)}
+                    className="cursor-pointer shrink-0 rounded-lg p-2 text-[#94A3B8] transition-colors hover:bg-red-50 hover:text-[#EF4444]"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3 pl-8">

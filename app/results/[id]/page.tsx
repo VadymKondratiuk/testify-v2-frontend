@@ -27,6 +27,8 @@ type BackendQuestion = {
   text: string;
   type: BackendQuestionType;
   points: number;
+  correctTextAnswer?: string | null;
+  acceptedTextAnswers?: string[];
   tags?: BackendTag[];
   options?: {
     id: string;
@@ -40,6 +42,7 @@ type BackendUserAnswer = {
   optionId?: string | null;
   textAnswer?: string | null;
   isCorrect: boolean;
+  earnedPoints: number;
   question: BackendQuestion;
 };
 
@@ -115,6 +118,8 @@ function mapAttempt(attempt: BackendAttempt) {
     type: toUiQuestionType(backendQuestion.type),
     points: backendQuestion.points,
     text: backendQuestion.text,
+    correctTextAnswer: backendQuestion.correctTextAnswer ?? "",
+    acceptedTextAnswers: backendQuestion.acceptedTextAnswers ?? [],
     tags: (backendQuestion.tags ?? []).map((tag) => tag.name ?? tag.id ?? "").filter(Boolean),
     options: (backendQuestion.options ?? []).map((option) => ({
       id: option.id,
@@ -128,14 +133,15 @@ function mapAttempt(attempt: BackendAttempt) {
       .map((answer) => answer.optionId)
       .filter((optionId): optionId is string => Boolean(optionId));
     const textAnswer = answers.find((answer) => Boolean(answer.textAnswer?.trim()))?.textAnswer?.trim();
-    const hasAnswer = selectedOptionIds.length > 0 || Boolean(textAnswer);
-    const isCorrect = hasAnswer && answers.length > 0 && answers.every((answer) => answer.isCorrect);
+    const earnedPoints = answers.length === 0
+      ? 0
+      : Math.max(...answers.map((answer) => answer.earnedPoints ?? 0));
 
     return {
       questionId: question.id,
       selectedOptionIds,
       textAnswer,
-      earnedPoints: isCorrect ? question.points : 0,
+      earnedPoints,
     };
   });
 
@@ -261,7 +267,7 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
 
   const { testData, resultData, recommendation } = mappedResult;
   const totalPoints = testData.questions.reduce((sum, question) => sum + question.points, 0);
-  const earnedPoints = resultData.answers.reduce((sum, answer) => sum + answer.earnedPoints, 0);
+  const earnedPoints = Math.round(resultData.answers.reduce((sum, answer) => sum + answer.earnedPoints, 0) * 100) / 100;
   const score = totalPoints === 0 ? 0 : Math.round((earnedPoints / totalPoints) * 100);
   const passed = score >= testData.passingScore;
 

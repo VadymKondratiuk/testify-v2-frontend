@@ -9,6 +9,8 @@ export interface Question {
   type: "Single Choice" | "Multiple Choice" | "Text Answer";
   points: number;
   text: string;
+  correctTextAnswer?: string;
+  acceptedTextAnswers?: string[];
   tags: string[];
   options: Option[];
 }

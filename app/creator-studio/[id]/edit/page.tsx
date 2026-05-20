@@ -33,6 +33,8 @@ interface QuestionApiResponse {
   text: string;
   type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TEXT_ANSWER";
   points: number;
+  correctTextAnswer?: string | null;
+  acceptedTextAnswers?: string[];
   tags: Array<{
     id: string;
     name: string;
@@ -73,6 +75,8 @@ const buildQuestionSnapshot = (question: Question) =>
     text: question.text,
     type: question.type,
     points: question.points,
+    correctTextAnswer: question.correctTextAnswer ?? "",
+    acceptedTextAnswers: question.acceptedTextAnswers ?? [],
     tags: question.tags,
   });
 
@@ -130,6 +134,8 @@ const mapApiQuestion = (question: QuestionApiResponse): Question => ({
   type: mapQuestionType(question.type),
   points: question.points,
   text: question.text,
+  correctTextAnswer: question.correctTextAnswer ?? "",
+  acceptedTextAnswers: question.acceptedTextAnswers ?? [],
   tags: question.tags.map((tag) => tag.name),
   options: question.options.map((option) => ({
     id: option.id,
@@ -307,11 +313,11 @@ export default function TestBuilderPage() {
 
     const hasInvalidQuestion = changedQuestions.some((question) => question.text.trim().length < 3);
     const hasInvalidOption = changedOptions.some(({ option }) => option.text.trim().length === 0);
-    const hasUnsupportedTextAnswerChange = changedQuestions.some(
-      (question) => question.type === "Text Answer" && question.options.length > 0,
+    const hasInvalidTextAnswer = changedQuestions.some(
+      (question) => question.type === "Text Answer" && !question.correctTextAnswer?.trim(),
     );
 
-    if (hasInvalidQuestion || hasInvalidOption || hasUnsupportedTextAnswerChange) {
+    if (hasInvalidQuestion || hasInvalidOption || hasInvalidTextAnswer) {
       return;
     }
 
@@ -328,6 +334,8 @@ export default function TestBuilderPage() {
             text: question.text,
             type: mapBackendQuestionType(question.type),
             points: question.points,
+            correctTextAnswer: question.type === "Text Answer" ? question.correctTextAnswer?.trim() : undefined,
+            acceptedTextAnswers: question.type === "Text Answer" ? question.acceptedTextAnswers ?? [] : undefined,
             tagNames: question.tags,
           });
         }
@@ -405,6 +413,8 @@ export default function TestBuilderPage() {
         text: question.text,
         type: mapBackendQuestionType(question.type),
         points: question.points,
+        correctTextAnswer: question.type === "Text Answer" ? question.correctTextAnswer?.trim() : undefined,
+        acceptedTextAnswers: question.type === "Text Answer" ? question.acceptedTextAnswers ?? [] : undefined,
         tagNames: question.tags,
       });
       savedQuestionSnapshotsRef.current.set(question.id, buildQuestionSnapshot(question));
@@ -463,6 +473,8 @@ export default function TestBuilderPage() {
         text: "New question",
         type: "SINGLE_CHOICE",
         points: 1,
+        correctTextAnswer: "",
+        acceptedTextAnswers: [],
         tagNames: [],
       });
       const [firstOptionResponse, secondOptionResponse] = await Promise.all([
@@ -554,11 +566,42 @@ export default function TestBuilderPage() {
     markUnsaved();
   };
 
-  const updateQuestionConfig = (
+  const updateQuestionConfig = async (
     questionId: string,
     field: "type" | "points",
     value: QuestionConfigValue,
   ) => {
+    if (field === "type" && value === "Text Answer") {
+      const question = testData.questions.find((item) => item.id === questionId);
+      const optionIds = question?.options.map((option) => option.id) ?? [];
+
+      if (optionIds.length > 0) {
+        setSaveStatus("saving");
+        setSaveMessage("Removing options...");
+
+        try {
+          await Promise.all(optionIds.map((optionId) => api.delete(`/options/${optionId}`)));
+          for (const optionId of optionIds) {
+            savedOptionSnapshotsRef.current.delete(optionId);
+          }
+        } catch {
+          setSaveStatus("error");
+          setSaveMessage("Could not remove options");
+          return;
+        }
+      }
+
+      setTestData((currentTest) => ({
+        ...currentTest,
+        questions: currentTest.questions.map((q) =>
+          q.id === questionId ? { ...q, type: "Text Answer", options: [] } : q,
+        ),
+      }));
+      markUnsaved();
+
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) => {
@@ -578,6 +621,64 @@ export default function TestBuilderPage() {
 
         return { ...q, [field]: value };
       }),
+    }));
+    markUnsaved();
+  };
+
+  const updateCorrectTextAnswer = (questionId: string, correctTextAnswer: string) => {
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) =>
+        q.id === questionId ? { ...q, correctTextAnswer } : q,
+      ),
+    }));
+
+    if (!correctTextAnswer.trim()) {
+      setSaveStatus("error");
+      setSaveMessage("Correct text answer is required");
+      return;
+    }
+
+    markUnsaved();
+  };
+
+  const addAcceptedTextAnswer = (questionId: string) => {
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) =>
+        q.id === questionId
+          ? { ...q, acceptedTextAnswers: [...(q.acceptedTextAnswers ?? []), ""] }
+          : q,
+      ),
+    }));
+    markUnsaved();
+  };
+
+  const updateAcceptedTextAnswer = (questionId: string, index: number, value: string) => {
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) => {
+        if (q.id !== questionId) return q;
+
+        const acceptedTextAnswers = [...(q.acceptedTextAnswers ?? [])];
+        acceptedTextAnswers[index] = value;
+        return { ...q, acceptedTextAnswers };
+      }),
+    }));
+    markUnsaved();
+  };
+
+  const removeAcceptedTextAnswer = (questionId: string, index: number) => {
+    setTestData((currentTest) => ({
+      ...currentTest,
+      questions: currentTest.questions.map((q) =>
+        q.id === questionId
+          ? {
+              ...q,
+              acceptedTextAnswers: (q.acceptedTextAnswers ?? []).filter((_, itemIndex) => itemIndex !== index),
+            }
+          : q,
+      ),
     }));
     markUnsaved();
   };
@@ -783,6 +884,10 @@ export default function TestBuilderPage() {
                   onRemove={removeQuestion}
                   onUpdateText={updateQuestionText}
                   onUpdateConfig={updateQuestionConfig}
+                  onUpdateCorrectTextAnswer={updateCorrectTextAnswer}
+                  onAddAcceptedTextAnswer={addAcceptedTextAnswer}
+                  onUpdateAcceptedTextAnswer={updateAcceptedTextAnswer}
+                  onRemoveAcceptedTextAnswer={removeAcceptedTextAnswer}
                   onAddOption={addOption}
                   onRemoveOption={removeOption}
                   onUpdateOptionText={updateOptionText}

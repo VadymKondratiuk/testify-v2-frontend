@@ -24,6 +24,16 @@ export const QuestionReviewItem = ({ index, question, resultAnswer }: QuestionRe
     selectedOptionIds: [],
     earnedPoints: 0,
   };
+  const correctTextAnswers = [
+    question.correctTextAnswer,
+    ...(question.acceptedTextAnswers ?? []),
+  ].filter((answer, answerIndex, answers): answer is string => {
+    const normalizedAnswer = answer?.trim().toLocaleLowerCase();
+
+    return Boolean(normalizedAnswer) && answers.findIndex(
+      (item) => item?.trim().toLocaleLowerCase() === normalizedAnswer,
+    ) === answerIndex;
+  });
 
   // Визначаємо статус
   const status = getQuestionStatus(question, answerData);
@@ -51,13 +61,36 @@ export const QuestionReviewItem = ({ index, question, resultAnswer }: QuestionRe
       </div>
 
       {question.type === "Text Answer" ? (
-        <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-          <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-[#64748B]">
-            Your answer
-          </p>
-          <p className="whitespace-pre-wrap text-[0.95rem] leading-relaxed text-[#334155]">
-            {answerData.textAnswer || "No answer provided."}
-          </p>
+        <div className="grid gap-3">
+          <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+            <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-[#64748B]">
+              Your answer
+            </p>
+            <p className="whitespace-pre-wrap text-[0.95rem] leading-relaxed text-[#334155]">
+              {answerData.textAnswer || "No answer provided."}
+            </p>
+          </div>
+          <div className="rounded-xl border border-[#10B981]/30 bg-[#ECFDF5] p-4">
+            <p className="mb-2 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-[#047857]">
+              Correct answer
+            </p>
+            {correctTextAnswers.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {correctTextAnswers.map((answer) => (
+                  <span
+                    key={answer}
+                    className="rounded-lg border border-[#10B981]/25 bg-white px-3 py-1.5 text-[0.9rem] font-semibold text-[#334155]"
+                  >
+                    {answer}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="whitespace-pre-wrap text-[0.95rem] leading-relaxed text-[#334155]">
+                No correct answer saved.
+              </p>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid gap-3">

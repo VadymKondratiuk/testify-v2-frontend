@@ -47,7 +47,7 @@ export default function Header() {
           href="/catalog"
           className="font-['Sora',sans-serif] font-extrabold text-2xl tracking-[-0.04em] text-indigo-600 no-underline flex-shrink-0 after:content-['.'] after:text-amber-400"
         >
-          Testify
+          AssessPath
         </Link>
 
         <nav className="flex items-center gap-1">
