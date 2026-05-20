@@ -1,5 +1,6 @@
 // src/types/profile.ts
 import { LucideIcon } from "lucide-react";
+import type { RecommendationWeaknessDetail } from "@/features/recommendations/recommendations.api";
 
 export interface StatData {
   icon: LucideIcon;
@@ -16,6 +17,7 @@ export interface RecommendationData {
   title: string;
   description: string;
   matchedTags?: string[];
+  weaknessDetails?: RecommendationWeaknessDetail[];
 }
 
 export interface RecentTest {

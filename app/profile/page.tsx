@@ -49,6 +49,7 @@ export default function ProfilePage() {
               metadata: {
                 type: recommendation.type,
                 matchedTags: recommendation.matchedTags ?? [],
+                weaknessDetails: recommendation.weaknessDetails ?? [],
               },
             });
           });

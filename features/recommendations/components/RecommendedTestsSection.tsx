@@ -60,6 +60,7 @@ export function RecommendedTestsSection({
                     metadata: {
                       recommendationType: test.recommendationType,
                       matchedTags: test.matchedTags,
+                      weaknessDetails: test.weaknessDetails,
                     },
                   });
                 }}
@@ -67,6 +68,19 @@ export function RecommendedTestsSection({
               <p className="rounded-lg bg-indigo-50 px-3 py-2 text-[0.78rem] font-medium leading-relaxed text-indigo-700">
                 {test.reason}
               </p>
+              {test.weaknessDetails.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {test.weaknessDetails.slice(0, 3).map((detail) => (
+                    <span
+                      key={detail.tagId}
+                      className="rounded-md border border-red-100 bg-red-50 px-2 py-1 text-[0.7rem] font-semibold text-red-700"
+                      title={`${detail.correctCount} correct, ${detail.wrongCount} wrong answers`}
+                    >
+                      {detail.tag} · mastery {Math.round(detail.masteryScore * 100)}%
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

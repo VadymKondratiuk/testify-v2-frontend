@@ -224,6 +224,7 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
                 attemptId: id,
                 recommendationType: test.recommendationType,
                 matchedTags: test.matchedTags,
+                weaknessDetails: test.weaknessDetails,
               },
             });
           });

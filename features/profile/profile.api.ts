@@ -146,6 +146,7 @@ function toProfileRecommendations(
     title: test.title,
     description: test.reason,
     matchedTags: test.matchedTags,
+    weaknessDetails: test.weaknessDetails,
   }));
 }
 

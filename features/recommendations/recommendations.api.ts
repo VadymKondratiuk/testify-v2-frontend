@@ -12,6 +12,7 @@ type BackendRecommendedTest = {
   averageRating?: number | null;
   reason: string;
   matchedTags: string[];
+  weaknessDetails: RecommendationWeaknessDetail[];
   recommendationType: "knowledge_gap" | "next_level" | "popular";
   category?: {
     id: string;
@@ -35,7 +36,18 @@ type RecommendationsResponse = {
 export type RecommendedTest = TestCardData & {
   reason: string;
   matchedTags: string[];
+  weaknessDetails: RecommendationWeaknessDetail[];
   recommendationType: "knowledge_gap" | "next_level" | "popular";
+};
+
+export type RecommendationWeaknessDetail = {
+  tagId: string;
+  tag: string;
+  attemptsCount: number;
+  correctCount: number;
+  wrongCount: number;
+  masteryScore: number;
+  weaknessScore: number;
 };
 
 export type RecommendationPlacement = "catalog" | "profile" | "result";
@@ -69,6 +81,7 @@ function mapRecommendedTest(test: BackendRecommendedTest): RecommendedTest {
     rating: test.averageRating ?? 0,
     reason: test.reason,
     matchedTags: test.matchedTags,
+    weaknessDetails: test.weaknessDetails ?? [],
     recommendationType: test.recommendationType,
   };
 }

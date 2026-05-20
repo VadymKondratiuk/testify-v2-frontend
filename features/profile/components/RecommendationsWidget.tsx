@@ -44,6 +44,19 @@ export function RecommendationsWidget({ recommendations }: RecommendationsWidget
               </div>
               <h3 className="font-semibold text-[#0F172A]">{rec.title}</h3>
               <p className="text-[#64748B] text-[0.85rem]">{rec.description}</p>
+              {rec.weaknessDetails && rec.weaknessDetails.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {rec.weaknessDetails.slice(0, 3).map((detail) => (
+                    <span
+                      key={detail.tagId}
+                      className="rounded-md border border-red-100 bg-red-50 px-2 py-1 text-[0.7rem] font-semibold text-red-700"
+                      title={`${detail.correctCount} correct, ${detail.wrongCount} wrong answers`}
+                    >
+                      {detail.tag} · {Math.round(detail.masteryScore * 100)}%
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <Link
               href={`/tests/${rec.testId}?recommended=1&placement=profile&source=profile_next_steps`}
@@ -56,6 +69,7 @@ export function RecommendationsWidget({ recommendations }: RecommendationsWidget
                   metadata: {
                     type: rec.type,
                     matchedTags: rec.matchedTags ?? [],
+                    weaknessDetails: rec.weaknessDetails ?? [],
                   },
                 });
               }}

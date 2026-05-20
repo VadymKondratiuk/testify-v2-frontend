@@ -32,6 +32,7 @@ export default function CatalogPage() {
               metadata: {
                 recommendationType: test.recommendationType,
                 matchedTags: test.matchedTags,
+                weaknessDetails: test.weaknessDetails,
               },
             });
           });
