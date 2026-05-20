@@ -38,6 +38,13 @@ export type RecommendedTest = TestCardData & {
   recommendationType: "knowledge_gap" | "next_level" | "popular";
 };
 
+export type RecommendationPlacement = "catalog" | "profile" | "result";
+export type RecommendationEventType =
+  | "recommendation_shown"
+  | "recommendation_clicked"
+  | "recommendation_started"
+  | "recommendation_completed";
+
 function toUiDifficulty(difficulty: BackendDifficulty): Difficulty {
   switch (difficulty) {
     case "ADVANCED":
@@ -67,7 +74,7 @@ function mapRecommendedTest(test: BackendRecommendedTest): RecommendedTest {
 }
 
 export async function getRecommendedTests(
-  placement: "catalog" | "profile" | "result",
+  placement: RecommendationPlacement,
   limit: number,
 ) {
   const { data } = await api.get<RecommendationsResponse>("/recommendations/tests", {
@@ -78,4 +85,30 @@ export async function getRecommendedTests(
   });
 
   return data.items.map(mapRecommendedTest);
+}
+
+export async function trackRecommendationEvent({
+  testId,
+  placement,
+  eventType,
+  source,
+  metadata,
+}: {
+  testId: string;
+  placement: RecommendationPlacement;
+  eventType: RecommendationEventType;
+  source?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    await api.post("/recommendations/events", {
+      testId,
+      placement,
+      eventType,
+      source,
+      metadata,
+    });
+  } catch {
+    // Telemetry must never block the learning flow.
+  }
 }

@@ -9,7 +9,7 @@ import TestCard from "@/features/catalog/components/TestCard";
 import { SORT_OPTIONS, type CatalogSort } from "@/features/catalog/catalog.consts";
 import { useCatalogFilters } from "@/features/catalog/hooks/useCatalogFilters";
 import { RecommendedTestsSection } from "@/features/recommendations/components/RecommendedTestsSection";
-import { getRecommendedTests, type RecommendedTest } from "@/features/recommendations/recommendations.api";
+import { getRecommendedTests, trackRecommendationEvent, type RecommendedTest } from "@/features/recommendations/recommendations.api";
 
 export default function CatalogPage() {
   const filters = useCatalogFilters();
@@ -23,6 +23,18 @@ export default function CatalogPage() {
       .then((tests) => {
         if (!ignore) {
           setRecommendedTests(tests);
+          tests.forEach((test) => {
+            void trackRecommendationEvent({
+              testId: test.id,
+              placement: "catalog",
+              eventType: "recommendation_shown",
+              source: "catalog_recommended_tests",
+              metadata: {
+                recommendationType: test.recommendationType,
+                matchedTags: test.matchedTags,
+              },
+            });
+          });
         }
       })
       .catch(() => {
@@ -103,6 +115,8 @@ export default function CatalogPage() {
 
           <RecommendedTestsSection
             tests={recommendedTests}
+            placement="catalog"
+            source="catalog_recommended_tests"
             isLoading={isRecommendationsLoading}
           />
 

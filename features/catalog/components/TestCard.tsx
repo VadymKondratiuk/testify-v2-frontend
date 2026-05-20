@@ -28,10 +28,14 @@ function StarRating({ rating }: { rating: number }) {
 // ── Main component ────────────────────────────────────────────
 export default function TestCard({ 
   card, 
-  viewMode = "grid" 
+  viewMode = "grid",
+  onTakeTestClick,
+  href,
 }: { 
   card: TestCardData;
   viewMode?: "grid" | "list";
+  onTakeTestClick?: (card: TestCardData) => void;
+  href?: string;
 }) {
   const { id, category, title, difficulty, duration, questions, description, rating } = card;
 
@@ -88,7 +92,8 @@ export default function TestCard({
         <div className="flex items-center justify-between border-t border-slate-200 pt-3 mt-1">
           <StarRating rating={rating} />
           <Link
-            href={`/tests/${id}`}
+            href={href ?? `/tests/${id}`}
+            onClick={() => onTakeTestClick?.(card)}
             className="inline-flex items-center gap-1 text-[0.76rem] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md px-3 py-1.5 no-underline transition-all duration-200 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white hover:-translate-y-px"
           >
             Take Test

@@ -13,7 +13,7 @@ import { ResultMetrics } from "@/features/results/components/ResultMetrics";
 import { ResultInsights } from "@/features/results/components/ResultInsights";
 import { QuestionReviewItem } from "@/features/results/components/QuestionReviewItem";
 import { RecommendedTestsSection } from "@/features/recommendations/components/RecommendedTestsSection";
-import { getRecommendedTests, type RecommendedTest } from "@/features/recommendations/recommendations.api";
+import { getRecommendedTests, trackRecommendationEvent, type RecommendedTest } from "@/features/recommendations/recommendations.api";
 
 type BackendQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TEXT_ANSWER";
 
@@ -193,6 +193,19 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
       .then((tests) => {
         if (!ignore) {
           setRecommendedTests(tests);
+          tests.forEach((test) => {
+            void trackRecommendationEvent({
+              testId: test.id,
+              placement: "result",
+              eventType: "recommendation_shown",
+              source: "result_recommended_tests",
+              metadata: {
+                attemptId: id,
+                recommendationType: test.recommendationType,
+                matchedTags: test.matchedTags,
+              },
+            });
+          });
         }
       })
       .catch(() => {
@@ -290,6 +303,8 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
 
         <RecommendedTestsSection
           tests={recommendedTests}
+          placement="result"
+          source="result_recommended_tests"
           isLoading={isRecommendationsLoading}
         />
 

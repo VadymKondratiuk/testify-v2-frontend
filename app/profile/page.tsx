@@ -12,6 +12,7 @@ import { UserProfileCard } from "@/features/profile/components/UserProfileCard";
 import { RecentHistoryWidget } from "@/features/profile/components/RecentHistoryWidget";
 import { getProfileDashboardData, type ProfileDashboardData } from "@/features/profile/profile.api";
 import { useAuthStore } from "@/features/auth/auth.store";
+import { trackRecommendationEvent } from "@/features/recommendations/recommendations.api";
 
 function getErrorMessage(error: unknown) {
   if (axios.isAxiosError<{ message?: string | string[] }>(error)) {
@@ -39,6 +40,18 @@ export default function ProfilePage() {
         if (!ignore) {
           setProfileData(data);
           setError(null);
+          data.recommendations.forEach((recommendation) => {
+            void trackRecommendationEvent({
+              testId: recommendation.testId,
+              placement: "profile",
+              eventType: "recommendation_shown",
+              source: "profile_next_steps",
+              metadata: {
+                type: recommendation.type,
+                matchedTags: recommendation.matchedTags ?? [],
+              },
+            });
+          });
         }
       })
       .catch((requestError) => {

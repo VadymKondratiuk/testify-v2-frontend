@@ -1,13 +1,20 @@
 import { Sparkles } from "lucide-react";
 import TestCard from "@/features/catalog/components/TestCard";
-import type { RecommendedTest } from "@/features/recommendations/recommendations.api";
+import { trackRecommendationEvent, type RecommendationPlacement, type RecommendedTest } from "@/features/recommendations/recommendations.api";
 
 interface RecommendedTestsSectionProps {
   tests: RecommendedTest[];
+  placement: RecommendationPlacement;
+  source?: string;
   isLoading?: boolean;
 }
 
-export function RecommendedTestsSection({ tests, isLoading = false }: RecommendedTestsSectionProps) {
+export function RecommendedTestsSection({
+  tests,
+  placement,
+  source = "recommended_tests_section",
+  isLoading = false,
+}: RecommendedTestsSectionProps) {
   if (!isLoading && tests.length === 0) {
     return null;
   }
@@ -41,7 +48,22 @@ export function RecommendedTestsSection({ tests, isLoading = false }: Recommende
         <div className="grid gap-4 md:grid-cols-3">
           {tests.map((test) => (
             <div key={test.id} className="flex flex-col gap-2">
-              <TestCard card={test} />
+              <TestCard
+                card={test}
+                href={`/tests/${test.id}?recommended=1&placement=${placement}&source=${source}`}
+                onTakeTestClick={() => {
+                  void trackRecommendationEvent({
+                    testId: test.id,
+                    placement,
+                    eventType: "recommendation_clicked",
+                    source,
+                    metadata: {
+                      recommendationType: test.recommendationType,
+                      matchedTags: test.matchedTags,
+                    },
+                  });
+                }}
+              />
               <p className="rounded-lg bg-indigo-50 px-3 py-2 text-[0.78rem] font-medium leading-relaxed text-indigo-700">
                 {test.reason}
               </p>

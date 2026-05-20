@@ -1,6 +1,7 @@
 // src/components/profile/RecommendationsWidget.tsx
 import Link from "next/link";
 import { BrainCircuit } from "lucide-react";
+import { trackRecommendationEvent } from "@/features/recommendations/recommendations.api";
 import { RecommendationData } from "@/features/profile/profile.types";
 
 interface RecommendationsWidgetProps {
@@ -45,7 +46,19 @@ export function RecommendationsWidget({ recommendations }: RecommendationsWidget
               <p className="text-[#64748B] text-[0.85rem]">{rec.description}</p>
             </div>
             <Link
-              href={`/tests/${rec.testId}`}
+              href={`/tests/${rec.testId}?recommended=1&placement=profile&source=profile_next_steps`}
+              onClick={() => {
+                void trackRecommendationEvent({
+                  testId: rec.testId,
+                  placement: "profile",
+                  eventType: "recommendation_clicked",
+                  source: "profile_next_steps",
+                  metadata: {
+                    type: rec.type,
+                    matchedTags: rec.matchedTags ?? [],
+                  },
+                });
+              }}
               className="w-full sm:w-auto px-5 py-2 bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[#4F46E5] font-semibold text-[0.9rem] rounded-lg transition-colors whitespace-nowrap text-center"
             >
               Start Topic

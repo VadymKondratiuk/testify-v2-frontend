@@ -4,8 +4,9 @@ import axios from "axios";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/shared/api/axios";
+import { trackRecommendationEvent, type RecommendationPlacement } from "@/features/recommendations/recommendations.api";
 import { Question, TestData } from "@/shared/types/test.types";
 
 import { TestSidebar } from "@/features/take/components/TestSidebar";
@@ -137,6 +138,7 @@ function buildSubmitAnswers(questions: Question[], answers: AnswersState): Submi
 export default function TakeTestPage({ params }: TakeTestPageProps) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const startRequestedRef = useRef(false);
 
   const [attemptId, setAttemptId] = useState<string | null>(null);
@@ -167,6 +169,22 @@ export default function TakeTestPage({ params }: TakeTestPageProps) {
         setTestData(mappedTest);
         setEndTime(initialTimeLeft > 0 ? Date.now() + initialTimeLeft * 1000 : null);
         setTimeLeft(initialTimeLeft);
+
+        if (searchParams.get("recommended") === "1") {
+          const placement = searchParams.get("placement");
+
+          if (placement === "catalog" || placement === "profile" || placement === "result") {
+            void trackRecommendationEvent({
+              testId: id,
+              placement: placement as RecommendationPlacement,
+              eventType: "recommendation_started",
+              source: searchParams.get("source") ?? "test_take_page",
+              metadata: {
+                attemptId: data.attempt.id,
+              },
+            });
+          }
+        }
       })
       .catch((requestError) => {
         setError(getErrorMessage(requestError));
@@ -174,7 +192,7 @@ export default function TakeTestPage({ params }: TakeTestPageProps) {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [id]);
+  }, [id, searchParams]);
 
   const answeredCount = Object.values(answers).filter((ans) =>
     Array.isArray(ans) ? ans.length > 0 : Boolean(ans)
