@@ -82,6 +82,7 @@ export async function getRecommendedTests(
       placement,
       limit,
     },
+    skipAuthRedirect: true,
   });
 
   return data.items.map(mapRecommendedTest);
@@ -107,7 +108,7 @@ export async function trackRecommendationEvent({
       eventType,
       source,
       metadata,
-    });
+    }, { skipAuthRedirect: true });
   } catch {
     // Telemetry must never block the learning flow.
   }

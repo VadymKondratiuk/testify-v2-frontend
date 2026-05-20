@@ -88,7 +88,7 @@ export function TestCard({ test, isDeleting = false, onDelete }: TestCardProps) 
           onClick={() => onDelete(test)}
           disabled={isDeleting}
           className="cursor-pointer p-2 text-[#94A3B8] hover:text-[#EF4444] hover:bg-red-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          title="Delete Test"
+          title="Remove test"
         >
           <Trash2 size={16} />
         </button>

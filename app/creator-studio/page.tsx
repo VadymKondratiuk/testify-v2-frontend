@@ -39,7 +39,7 @@ const mapTestSummary = (test: MyTestsApiResponse["items"][number]): TestSummary 
 
 const getDeleteErrorMessage = (requestError: unknown) => {
   if (!(requestError instanceof AxiosError)) {
-    return "Не вдалося видалити тест. Спробуйте ще раз.";
+    return "Could not remove the test. Please try again.";
   }
 
   const data = requestError.response?.data;
@@ -50,14 +50,10 @@ const getDeleteErrorMessage = (requestError: unknown) => {
     "message" in data &&
     typeof data.message === "string"
   ) {
-    if (data.message.includes("already has attempts")) {
-      return "This test cannot be deleted because students have already taken it.";
-    }
-
     return data.message;
   }
 
-  return "Could not delete the test. Please try again.";
+  return "Could not remove the test. Please try again.";
 };
 
 export default function CreatorStudioPage() {
@@ -259,7 +255,7 @@ export default function CreatorStudioPage() {
                     Delete test?
                   </h2>
                   <p className="mt-1 text-[0.9rem] leading-6 text-[#64748B]">
-                    Are you sure you want to delete &quot;{testToDelete.title}&quot; and all of its content?
+                    Draft tests without activity are deleted permanently. Tests with activity are archived and removed from active lists.
                   </p>
                 </div>
               </div>
@@ -296,7 +292,7 @@ export default function CreatorStudioPage() {
                 disabled={Boolean(deletingTestId)}
                 className="cursor-pointer rounded-xl bg-red-500 px-4 py-2.5 text-[0.9rem] font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {deletingTestId ? "Deleting..." : "Yes, delete"}
+                {deletingTestId ? "Removing..." : "Yes, remove"}
               </button>
             </div>
           </div>

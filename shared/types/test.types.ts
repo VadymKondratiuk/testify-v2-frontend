@@ -15,12 +15,15 @@ export interface Question {
   options: Option[];
 }
 
+export type TestDifficulty = "Beginner" | "Intermediate" | "Advanced";
+
 export interface TestData {
   id: string;
   title: string;
   description: string;
   category: string;
   categoryId: string;
+  difficulty: TestDifficulty;
   passingScore: number;
   timeLimit: number | string;
   questions: Question[];

@@ -6,6 +6,7 @@ export const mockTest: TestData = {
   description: "A comprehensive test covering closures, promises, and the event loop. Perfect for mid-level developers.",
   category: "Programming",
   categoryId: "",
+  difficulty: "Intermediate",
   passingScore: 50,
   timeLimit: 30,
   questions: [

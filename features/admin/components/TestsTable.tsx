@@ -81,9 +81,9 @@ export function TestsTable({
                     className="w-[86px]"
                     disabled={pendingAction === `test-delete-${test.id}`}
                     onClick={() => onDelete(test)}
-                    title="Delete this test if the server allows it."
+                    title="Delete draft tests or archive tests with activity."
                   >
-                    Delete
+                    Remove
                   </ActionButton>
                 </div>
               </td>

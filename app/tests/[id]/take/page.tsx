@@ -7,7 +7,7 @@ import { AlertTriangle, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/shared/api/axios";
 import { trackRecommendationEvent, type RecommendationPlacement } from "@/features/recommendations/recommendations.api";
-import { Question, TestData } from "@/shared/types/test.types";
+import { Question, TestData, TestDifficulty } from "@/shared/types/test.types";
 
 import { TestSidebar } from "@/features/take/components/TestSidebar";
 import { TestBoard } from "@/features/take/components/TestBoard";
@@ -15,6 +15,7 @@ import { TestBoard } from "@/features/take/components/TestBoard";
 type AnswersState = Record<string, string | string[]>;
 
 type BackendQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TEXT_ANSWER";
+type BackendDifficulty = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
 type BackendTag = {
   id?: string;
@@ -40,6 +41,7 @@ type BackendTestForTaking = {
   id: string;
   title: string;
   description?: string | null;
+  difficulty: BackendDifficulty;
   passingScore: number;
   timeLimit?: number | null;
   category?: {
@@ -77,6 +79,18 @@ function toUiQuestionType(type: BackendQuestionType): Question["type"] {
   }
 }
 
+function toUiDifficulty(difficulty: BackendDifficulty): TestDifficulty {
+  switch (difficulty) {
+    case "ADVANCED":
+      return "Advanced";
+    case "INTERMEDIATE":
+      return "Intermediate";
+    case "BEGINNER":
+    default:
+      return "Beginner";
+  }
+}
+
 function mapTag(tag: BackendTag | string) {
   return typeof tag === "string" ? tag : tag.name ?? tag.id ?? "";
 }
@@ -88,6 +102,7 @@ function mapTestForTaking(test: BackendTestForTaking): TestData {
     description: test.description ?? "",
     category: test.category?.name ?? "Uncategorized",
     categoryId: test.category?.id ?? "",
+    difficulty: toUiDifficulty(test.difficulty),
     passingScore: test.passingScore,
     timeLimit: test.timeLimit ?? 0,
     questions: test.questions

@@ -1,14 +1,17 @@
 // src/components/creator-studio/TestSettings.tsx
-import { CategoryOption, TestData } from "@/shared/types/test.types";
+import { CategoryOption, TestData, TestDifficulty } from "@/shared/types/test.types";
 import { ChevronDown } from "lucide-react";
 
 interface TestSettingsProps {
   data: TestData;
   onChange: (field: keyof TestData, value: TestData[keyof TestData]) => void;
   categories?: CategoryOption[];
+  disabled?: boolean;
 }
 
-export function TestSettings({ data, onChange, categories = [] }: TestSettingsProps) {
+const difficultyOptions: TestDifficulty[] = ["Beginner", "Intermediate", "Advanced"];
+
+export function TestSettings({ data, onChange, categories = [], disabled = false }: TestSettingsProps) {
   return (
     <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-8 animate-in fade-in duration-300">
       <h2 className="font-[family-name:var(--font-sora)] font-bold text-[#0F172A] text-[1.3rem] mb-6">Test Settings</h2>
@@ -21,12 +24,13 @@ export function TestSettings({ data, onChange, categories = [] }: TestSettingsPr
           <div className="relative">
             <select 
               value={data.categoryId}
+              disabled={disabled}
               onChange={(e) => {
                 const selectedCategory = categories.find((category) => category.id === e.target.value);
                 onChange("categoryId", e.target.value);
                 onChange("category", selectedCategory?.name ?? "");
               }}
-              className="appearance-none cursor-pointer w-full pl-4 pr-11 py-3 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors"
+              className="appearance-none cursor-pointer w-full pl-4 pr-11 py-3 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B]"
             >
               <option value="">Select a category...</option>
               {categories.map((category) => (
@@ -49,13 +53,36 @@ export function TestSettings({ data, onChange, categories = [] }: TestSettingsPr
           <textarea 
             rows={4} 
             value={data.description}
+            disabled={disabled}
             onChange={(e) => onChange("description", e.target.value)}
             placeholder="Briefly describe what this test is about..."
-            className="w-full px-4 py-3 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors"
+            className="w-full px-4 py-3 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B]"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-[0.85rem] font-semibold text-[#334155] mb-2">Difficulty</label>
+            <div className="relative">
+              <select
+                value={data.difficulty}
+                disabled={disabled}
+                onChange={(e) => onChange("difficulty", e.target.value as TestDifficulty)}
+                className="appearance-none cursor-pointer w-full pl-4 pr-11 py-2.5 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B]"
+              >
+                {difficultyOptions.map((difficulty) => (
+                  <option key={difficulty} value={difficulty}>
+                    {difficulty}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={18}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-[0.85rem] font-semibold text-[#334155] mb-2">Passing Score (%)</label>
             <input 
@@ -63,6 +90,7 @@ export function TestSettings({ data, onChange, categories = [] }: TestSettingsPr
               min="0"
               max="100"
               value={data.passingScore} 
+              disabled={disabled}
               onChange={(e) => {
                 let val = parseInt(e.target.value);
                 if (isNaN(val)) val = 0;
@@ -70,7 +98,7 @@ export function TestSettings({ data, onChange, categories = [] }: TestSettingsPr
                 if (val < 0) val = 0;
                 onChange("passingScore", val);
               }}
-              className="w-full px-4 py-2.5 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors" 
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B]" 
             />
             <p className="text-[0.75rem] text-[#64748B] mt-1.5">Students must score at least {data.passingScore}% to pass.</p>
           </div>
@@ -82,6 +110,7 @@ export function TestSettings({ data, onChange, categories = [] }: TestSettingsPr
               min="1"
               max="300"
               value={data.timeLimit} 
+              disabled={disabled}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -95,7 +124,7 @@ export function TestSettings({ data, onChange, categories = [] }: TestSettingsPr
                 onChange("timeLimit", num);
               }}
               placeholder="No limit" 
-              className="w-full px-4 py-2.5 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors" 
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-colors disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B]" 
             />
             <p className="text-[0.75rem] text-[#64748B] mt-1.5">Leave empty for an untimed test.</p>
           </div>

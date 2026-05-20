@@ -8,18 +8,20 @@ import { BuilderHeader } from "@/features/edit/components/BuilderHeader";
 import { QuestionCard } from "@/features/edit/components/QuestionCard";
 import { TestSettings } from "@/features/edit/components/TestSettings";
 import { api } from "@/shared/api/axios";
-import { CategoryOption, Question, TestData } from "@/shared/types/test.types";
+import { CategoryOption, Question, TestData, TestDifficulty } from "@/shared/types/test.types";
 
 type QuestionConfigValue = Question["type"] | number;
 type TestSettingValue = TestData[keyof TestData];
 type SaveStatus = "saved" | "unsaved" | "saving" | "error";
 type BackendQuestionType = QuestionApiResponse["type"];
+type BackendDifficulty = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
 interface TestApiResponse {
   id: string;
   title: string;
   description: string | null;
   isPublished: boolean;
+  difficulty: BackendDifficulty;
   passingScore: number;
   timeLimit: number | null;
   category: {
@@ -56,6 +58,7 @@ const emptyTest: TestData = {
   description: "",
   category: "",
   categoryId: "",
+  difficulty: "Beginner",
   passingScore: 60,
   timeLimit: "",
   questions: [],
@@ -66,6 +69,7 @@ const buildSaveSnapshot = (test: TestData) =>
     title: test.title,
     description: test.description,
     categoryId: test.categoryId,
+    difficulty: test.difficulty,
     passingScore: test.passingScore,
     timeLimit: test.timeLimit,
   });
@@ -129,6 +133,30 @@ const mapBackendQuestionType = (type: Question["type"]): BackendQuestionType => 
   }
 };
 
+const mapDifficulty = (difficulty: BackendDifficulty): TestDifficulty => {
+  switch (difficulty) {
+    case "ADVANCED":
+      return "Advanced";
+    case "INTERMEDIATE":
+      return "Intermediate";
+    case "BEGINNER":
+    default:
+      return "Beginner";
+  }
+};
+
+const mapBackendDifficulty = (difficulty: TestDifficulty): BackendDifficulty => {
+  switch (difficulty) {
+    case "Advanced":
+      return "ADVANCED";
+    case "Intermediate":
+      return "INTERMEDIATE";
+    case "Beginner":
+    default:
+      return "BEGINNER";
+  }
+};
+
 const mapApiQuestion = (question: QuestionApiResponse): Question => ({
   id: question.id,
   type: mapQuestionType(question.type),
@@ -150,6 +178,7 @@ const mapTestData = (test: TestApiResponse, questions: QuestionApiResponse[]): T
   description: test.description ?? "",
   category: test.category?.name ?? "",
   categoryId: test.category?.id ?? "",
+  difficulty: mapDifficulty(test.difficulty),
   passingScore: test.passingScore,
   timeLimit: test.timeLimit ?? "",
   questions: questions.map(mapApiQuestion),
@@ -186,16 +215,19 @@ export default function TestBuilderPage() {
   const savedOptionSnapshotsRef = useRef<Map<string, string>>(new Map());
   const saveRequestIdRef = useRef(0);
   const questionSaveRequestIdRef = useRef(0);
+  const isReadOnly = isPublished;
 
   const savePayload = useMemo(() => ({
     title: testData.title,
     description: testData.description,
+    difficulty: mapBackendDifficulty(testData.difficulty),
     passingScore: testData.passingScore,
     timeLimit: testData.timeLimit === "" ? null : Number(testData.timeLimit),
     categoryId: testData.categoryId || null,
   }), [
     testData.title,
     testData.description,
+    testData.difficulty,
     testData.passingScore,
     testData.timeLimit,
     testData.categoryId,
@@ -248,7 +280,7 @@ export default function TestBuilderPage() {
   }, [params.id]);
 
   useEffect(() => {
-    if (isLoading || error) {
+    if (isLoading || error || isReadOnly) {
       return;
     }
 
@@ -291,10 +323,10 @@ export default function TestBuilderPage() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [error, isLoading, params.id, savePayload, testData]);
+  }, [error, isLoading, isReadOnly, params.id, savePayload, testData]);
 
   useEffect(() => {
-    if (isLoading || error) {
+    if (isLoading || error || isReadOnly) {
       return;
     }
 
@@ -378,9 +410,13 @@ export default function TestBuilderPage() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [error, isLoading, testData.questions]);
+  }, [error, isLoading, isReadOnly, testData.questions]);
 
   const updateSetting = (field: keyof TestData, value: TestSettingValue) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({ ...currentTest, [field]: value }));
 
     if (field === "title" && typeof value === "string" && value.trim().length === 0) {
@@ -394,6 +430,10 @@ export default function TestBuilderPage() {
   };
 
   const markUnsaved = () => {
+    if (isReadOnly) {
+      return;
+    }
+
     setSaveStatus("unsaved");
     setSaveMessage("Unsaved changes");
   };
@@ -464,6 +504,10 @@ export default function TestBuilderPage() {
   };
 
   const addQuestion = async () => {
+    if (isReadOnly) {
+      return;
+    }
+
     setSaveStatus("saving");
     setSaveMessage("Creating question...");
 
@@ -523,6 +567,10 @@ export default function TestBuilderPage() {
   };
 
   const removeQuestion = async (questionId: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     const questionToRemove = testData.questions.find((question) => question.id === questionId);
     setTestData((currentTest) => ({
       ...currentTest,
@@ -552,6 +600,10 @@ export default function TestBuilderPage() {
   };
 
   const updateQuestionText = (questionId: string, newText: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) =>
@@ -571,26 +623,11 @@ export default function TestBuilderPage() {
     field: "type" | "points",
     value: QuestionConfigValue,
   ) => {
+    if (isReadOnly) {
+      return;
+    }
+
     if (field === "type" && value === "Text Answer") {
-      const question = testData.questions.find((item) => item.id === questionId);
-      const optionIds = question?.options.map((option) => option.id) ?? [];
-
-      if (optionIds.length > 0) {
-        setSaveStatus("saving");
-        setSaveMessage("Removing options...");
-
-        try {
-          await Promise.all(optionIds.map((optionId) => api.delete(`/options/${optionId}`)));
-          for (const optionId of optionIds) {
-            savedOptionSnapshotsRef.current.delete(optionId);
-          }
-        } catch {
-          setSaveStatus("error");
-          setSaveMessage("Could not remove options");
-          return;
-        }
-      }
-
       setTestData((currentTest) => ({
         ...currentTest,
         questions: currentTest.questions.map((q) =>
@@ -626,6 +663,10 @@ export default function TestBuilderPage() {
   };
 
   const updateCorrectTextAnswer = (questionId: string, correctTextAnswer: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) =>
@@ -643,6 +684,10 @@ export default function TestBuilderPage() {
   };
 
   const addAcceptedTextAnswer = (questionId: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) =>
@@ -655,6 +700,10 @@ export default function TestBuilderPage() {
   };
 
   const updateAcceptedTextAnswer = (questionId: string, index: number, value: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) => {
@@ -669,6 +718,10 @@ export default function TestBuilderPage() {
   };
 
   const removeAcceptedTextAnswer = (questionId: string, index: number) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) =>
@@ -684,6 +737,10 @@ export default function TestBuilderPage() {
   };
 
   const addQuestionTag = (questionId: string, tag: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) =>
@@ -694,6 +751,10 @@ export default function TestBuilderPage() {
   };
 
   const removeQuestionTag = (questionId: string, tagToRemove: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) =>
@@ -704,6 +765,10 @@ export default function TestBuilderPage() {
   };
 
   const addOption = async (questionId: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     const question = testData.questions.find((item) => item.id === questionId);
     if (!question || question.type === "Text Answer") return;
 
@@ -738,6 +803,10 @@ export default function TestBuilderPage() {
   };
 
   const removeOption = async (questionId: string, optionId: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     const question = testData.questions.find((item) => item.id === questionId);
     const optionToRemove = question?.options.find((option) => option.id === optionId);
     if (!question || !optionToRemove || question.options.length <= 2) return;
@@ -770,6 +839,10 @@ export default function TestBuilderPage() {
   };
 
   const updateOptionText = (questionId: string, optionId: string, newText: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) => {
@@ -789,6 +862,10 @@ export default function TestBuilderPage() {
   };
 
   const toggleCorrectOption = (questionId: string, optionId: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setTestData((currentTest) => ({
       ...currentTest,
       questions: currentTest.questions.map((q) => {
@@ -874,6 +951,12 @@ export default function TestBuilderPage() {
 
       <main className="flex-1 p-5 md:p-8">
         <div className="max-w-3xl mx-auto pb-20">
+          {isReadOnly && (
+            <div className="mb-6 rounded-2xl border border-[#C7D2FE] bg-[#EEF2FF] px-5 py-4 text-[0.95rem] font-medium text-[#4338CA]">
+              This test is published. Unpublish it to edit settings or questions.
+            </div>
+          )}
+
           {activeTab === "questions" ? (
             <div className="flex flex-col gap-6 animate-in fade-in duration-300">
               {testData.questions.map((question, index) => (
@@ -894,17 +977,19 @@ export default function TestBuilderPage() {
                   onToggleCorrect={toggleCorrectOption}
                   onAddTag={addQuestionTag}
                   onRemoveTag={removeQuestionTag}
+                  disabled={isReadOnly}
                 />
               ))}
               <button
+                disabled={isReadOnly}
                 onClick={addQuestion}
-                className="cursor-pointer flex items-center justify-center gap-2 w-full py-4 border-2 border-dashed border-[#CBD5E1] rounded-2xl text-[#64748B] hover:text-[#4F46E5] hover:border-[#4F46E5] hover:bg-[#EEF2FF] font-semibold text-[1rem] transition-all"
+                className="cursor-pointer flex items-center justify-center gap-2 w-full py-4 border-2 border-dashed border-[#CBD5E1] rounded-2xl text-[#64748B] hover:text-[#4F46E5] hover:border-[#4F46E5] hover:bg-[#EEF2FF] font-semibold text-[1rem] transition-all disabled:cursor-not-allowed disabled:text-[#94A3B8] disabled:hover:border-[#CBD5E1] disabled:hover:bg-transparent"
               >
                 <Plus size={20} /> Add New Question
               </button>
             </div>
           ) : (
-            <TestSettings data={testData} onChange={updateSetting} categories={categories} />
+            <TestSettings data={testData} onChange={updateSetting} categories={categories} disabled={isReadOnly} />
           )}
         </div>
       </main>

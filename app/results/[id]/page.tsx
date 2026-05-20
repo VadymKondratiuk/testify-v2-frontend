@@ -5,7 +5,7 @@ import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { api } from "@/shared/api/axios";
-import { Question, TestData } from "@/shared/types/test.types";
+import { Question, TestData, TestDifficulty } from "@/shared/types/test.types";
 import { TestResultAnswer, TestResultData } from "@/shared/types/test-result.types";
 import { getQuestionStatus } from "@/features/results/result.utils";
 import { ResultHeader } from "@/features/results/components/ResultHeader";
@@ -16,6 +16,7 @@ import { RecommendedTestsSection } from "@/features/recommendations/components/R
 import { getRecommendedTests, trackRecommendationEvent, type RecommendedTest } from "@/features/recommendations/recommendations.api";
 
 type BackendQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TEXT_ANSWER";
+type BackendDifficulty = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
 type BackendTag = {
   id?: string;
@@ -60,6 +61,7 @@ type BackendAttempt = {
     id: string;
     title: string;
     description?: string | null;
+    difficulty: BackendDifficulty;
     passingScore: number;
     timeLimit?: number | null;
     category?: {
@@ -86,6 +88,18 @@ function toUiQuestionType(type: BackendQuestionType): Question["type"] {
     case "SINGLE_CHOICE":
     default:
       return "Single Choice";
+  }
+}
+
+function toUiDifficulty(difficulty: BackendDifficulty): TestDifficulty {
+  switch (difficulty) {
+    case "ADVANCED":
+      return "Advanced";
+    case "INTERMEDIATE":
+      return "Intermediate";
+    case "BEGINNER":
+    default:
+      return "Beginner";
   }
 }
 
@@ -151,6 +165,7 @@ function mapAttempt(attempt: BackendAttempt) {
     description: attempt.test.description ?? "",
     category: attempt.test.category?.name ?? "Uncategorized",
     categoryId: attempt.test.category?.id ?? "",
+    difficulty: toUiDifficulty(attempt.test.difficulty),
     passingScore: attempt.passingScore,
     timeLimit: attempt.test.timeLimit ?? 0,
     questions,

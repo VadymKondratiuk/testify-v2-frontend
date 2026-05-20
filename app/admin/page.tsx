@@ -203,11 +203,11 @@ export default function AdminPage() {
 
   const handleDeleteTest = (test: AdminTest) => {
     setConfirmation({
-      title: "Delete test?",
-      body: `"${test.title}" will be permanently removed. Tests with completed attempts may be protected by the server.`,
-      confirmLabel: "Delete Test",
+      title: "Remove test?",
+      body: `"${test.title}" will be removed from active lists. Draft tests without activity are deleted permanently; tests with activity are archived.`,
+      confirmLabel: "Remove Test",
       actionId: `test-delete-${test.id}`,
-      successMessage: "Test deleted.",
+      successMessage: "Test removed.",
       onConfirm: async () => {
         await deleteAdminTest(test.id);
         setTests((currentTests) => currentTests.filter((item) => item.id !== test.id));
@@ -259,7 +259,7 @@ export default function AdminPage() {
   const handleDeleteCategory = (category: AdminCategory) => {
     setConfirmation({
       title: "Delete category?",
-      body: `"${category.name}" will be removed if it has no tests. Categories with tests cannot be deleted.`,
+      body: `"${category.name}" will be removed. Tests in this category will become uncategorized and unpublished.`,
       confirmLabel: "Delete Category",
       actionId: `category-delete-${category.id}`,
       successMessage: "Category deleted.",
