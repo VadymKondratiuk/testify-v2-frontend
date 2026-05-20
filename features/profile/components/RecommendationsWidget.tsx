@@ -1,4 +1,5 @@
 // src/components/profile/RecommendationsWidget.tsx
+import Link from "next/link";
 import { BrainCircuit } from "lucide-react";
 import { RecommendationData } from "@/features/profile/profile.types";
 
@@ -22,7 +23,11 @@ export function RecommendationsWidget({ recommendations }: RecommendationsWidget
       </div>
 
       <div className="flex flex-col gap-4">
-        {recommendations.map((rec) => (
+        {recommendations.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-5 text-[0.9rem] font-medium text-[#64748B]">
+            Complete a few tests to unlock personalized next steps.
+          </div>
+        ) : recommendations.map((rec) => (
           <div key={rec.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-[#E2E8F0] hover:border-[#4F46E5] hover:bg-[#F8FAFC] transition-colors gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -39,9 +44,12 @@ export function RecommendationsWidget({ recommendations }: RecommendationsWidget
               <h3 className="font-semibold text-[#0F172A]">{rec.title}</h3>
               <p className="text-[#64748B] text-[0.85rem]">{rec.description}</p>
             </div>
-            <button className="w-full sm:w-auto px-5 py-2 bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[#4F46E5] font-semibold text-[0.9rem] rounded-lg transition-colors whitespace-nowrap">
+            <Link
+              href={`/tests/${rec.testId}`}
+              className="w-full sm:w-auto px-5 py-2 bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[#4F46E5] font-semibold text-[0.9rem] rounded-lg transition-colors whitespace-nowrap text-center"
+            >
               Start Topic
-            </button>
+            </Link>
           </div>
         ))}
       </div>

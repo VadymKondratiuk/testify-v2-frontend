@@ -14,8 +14,8 @@ export const userStats: StatData[] = [
 ];
 
 export const recommendations: RecommendationData[] = [
-  { id: "r1", type: "gap", title: "Advanced PostgreSQL Triggers", description: "You scored 45% in this specific topic last week." },
-  { id: "r2", type: "next", title: "NestJS Microservices Architecture", description: "Ready to advance after mastering REST APIs." },
+  { id: "r1", testId: "r1", type: "gap", title: "Advanced PostgreSQL Triggers", description: "You scored 45% in this specific topic last week." },
+  { id: "r2", testId: "r2", type: "next", title: "NestJS Microservices Architecture", description: "Ready to advance after mastering REST APIs." },
 ];
 
 export const recentHistory: RecentTest[] = [

@@ -1,15 +1,45 @@
 "use client";
 
 import { LayoutGrid, List } from "lucide-react";
+import { useEffect, useState } from "react";
 import ActiveFilterTags from "@/features/catalog/components/ActiveFilterTags";
 import Pagination from "@/features/catalog/components/Pagination";
 import SidebarFilters from "@/features/catalog/components/SidebarFilters";
 import TestCard from "@/features/catalog/components/TestCard";
 import { SORT_OPTIONS, type CatalogSort } from "@/features/catalog/catalog.consts";
 import { useCatalogFilters } from "@/features/catalog/hooks/useCatalogFilters";
+import { RecommendedTestsSection } from "@/features/recommendations/components/RecommendedTestsSection";
+import { getRecommendedTests, type RecommendedTest } from "@/features/recommendations/recommendations.api";
 
 export default function CatalogPage() {
   const filters = useCatalogFilters();
+  const [recommendedTests, setRecommendedTests] = useState<RecommendedTest[]>([]);
+  const [isRecommendationsLoading, setIsRecommendationsLoading] = useState(true);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getRecommendedTests("catalog", 3)
+      .then((tests) => {
+        if (!ignore) {
+          setRecommendedTests(tests);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setRecommendedTests([]);
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
+          setIsRecommendationsLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FF] font-['DM_Sans',sans-serif] text-slate-900 antialiased">
@@ -70,6 +100,11 @@ export default function CatalogPage() {
           </div>
 
           <ActiveFilterTags filters={filters} />
+
+          <RecommendedTestsSection
+            tests={recommendedTests}
+            isLoading={isRecommendationsLoading}
+          />
 
           <section aria-label="Test cards" className="relative min-h-[260px]">
             {filters.error ? (

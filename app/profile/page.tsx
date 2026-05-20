@@ -5,7 +5,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { recommendations } from "@/features/profile/profile.mock";
 import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
 import { StatCard } from "@/features/profile/components/StatCard";
 import { RecommendationsWidget } from "@/features/profile/components/RecommendationsWidget";
@@ -105,7 +104,7 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          <RecommendationsWidget recommendations={recommendations} />
+          <RecommendationsWidget recommendations={profileData.recommendations} />
         </div>
 
         <div className="flex flex-col gap-8">

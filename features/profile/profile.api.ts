@@ -1,8 +1,9 @@
 import axios from "axios";
 import { BrainCircuit, Clock, Target, TrendingUp } from "lucide-react";
 import { api } from "@/shared/api/axios";
+import { getRecommendedTests } from "@/features/recommendations/recommendations.api";
 import type { AuthUser } from "@/features/auth/auth.service";
-import type { RecentTest, StatData, UserProfile } from "@/features/profile/profile.types";
+import type { RecommendationData, RecentTest, StatData, UserProfile } from "@/features/profile/profile.types";
 
 type DashboardResponse = {
   user: {
@@ -58,6 +59,7 @@ type PaginatedResponse<T> = {
 export type ProfileDashboardData = {
   user: UserProfile;
   stats: StatData[];
+  recommendations: RecommendationData[];
   recentHistory: RecentTest[];
 };
 
@@ -134,6 +136,19 @@ function toRecentHistory(attempts: BackendAttempt[]): RecentTest[] {
     }));
 }
 
+function toProfileRecommendations(
+  tests: Awaited<ReturnType<typeof getRecommendedTests>>,
+): RecommendationData[] {
+  return tests.map((test) => ({
+    id: test.id,
+    testId: test.id,
+    type: test.recommendationType === "knowledge_gap" ? "gap" : "next",
+    title: test.title,
+    description: test.reason,
+    matchedTags: test.matchedTags,
+  }));
+}
+
 function getFallbackUser(currentUser: AuthUser | null): UserProfile {
   return {
     name: getDisplayName(currentUser?.name, currentUser?.email),
@@ -171,10 +186,12 @@ export async function getProfileDashboardData(currentUser: AuthUser | null): Pro
 
   const dashboardRequest = api.get<DashboardResponse>("/users/me/dashboard");
   const userRequest = currentUser?.id ? api.get<BackendUser>(`/users/${currentUser.id}`) : Promise.reject();
-  const [attemptsResponse, dashboardResponse, userResponse] = await Promise.allSettled([
+  const recommendationsRequest = getRecommendedTests("profile", 3);
+  const [attemptsResponse, dashboardResponse, userResponse, recommendationsResponse] = await Promise.allSettled([
     attemptsRequest,
     dashboardRequest,
     userRequest,
+    recommendationsRequest,
   ]);
 
   if (attemptsResponse.status === "rejected" && dashboardResponse.status === "rejected" && userResponse.status === "rejected") {
@@ -184,6 +201,10 @@ export async function getProfileDashboardData(currentUser: AuthUser | null): Pro
   const attempts = attemptsResponse.status === "fulfilled" ? attemptsResponse.value.data.items : [];
   const dashboard = dashboardResponse.status === "fulfilled" ? dashboardResponse.value.data : null;
   const backendUser = userResponse.status === "fulfilled" ? userResponse.value.data : null;
+  const recommendations =
+    recommendationsResponse.status === "fulfilled"
+      ? toProfileRecommendations(recommendationsResponse.value)
+      : [];
   const stats = dashboard?.stats ?? buildStatsFromAttempts(attempts);
   const userSource = backendUser ?? dashboard?.user;
   const user = userSource
@@ -196,6 +217,7 @@ export async function getProfileDashboardData(currentUser: AuthUser | null): Pro
   return {
     user,
     stats: toStatsCards(stats),
+    recommendations,
     recentHistory: toRecentHistory(attempts),
   };
 }

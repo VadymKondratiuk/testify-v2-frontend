@@ -11,9 +11,11 @@ export interface StatData {
 
 export interface RecommendationData {
   id: string;
+  testId: string;
   type: "gap" | "next";
   title: string;
   description: string;
+  matchedTags?: string[];
 }
 
 export interface RecentTest {

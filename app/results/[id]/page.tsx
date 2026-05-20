@@ -12,6 +12,8 @@ import { ResultHeader } from "@/features/results/components/ResultHeader";
 import { ResultMetrics } from "@/features/results/components/ResultMetrics";
 import { ResultInsights } from "@/features/results/components/ResultInsights";
 import { QuestionReviewItem } from "@/features/results/components/QuestionReviewItem";
+import { RecommendedTestsSection } from "@/features/recommendations/components/RecommendedTestsSection";
+import { getRecommendedTests, type RecommendedTest } from "@/features/recommendations/recommendations.api";
 
 type BackendQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TEXT_ANSWER";
 
@@ -165,6 +167,8 @@ function mapAttempt(attempt: BackendAttempt) {
 export default function TestResultsPage({ params }: TestResultsPageProps) {
   const { id } = use(params);
   const [attempt, setAttempt] = useState<BackendAttempt | null>(null);
+  const [recommendedTests, setRecommendedTests] = useState<RecommendedTest[]>([]);
+  const [isRecommendationsLoading, setIsRecommendationsLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -181,6 +185,31 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
         setIsLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getRecommendedTests("result", 3)
+      .then((tests) => {
+        if (!ignore) {
+          setRecommendedTests(tests);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setRecommendedTests([]);
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
+          setIsRecommendationsLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const mappedResult = useMemo(() => attempt ? mapAttempt(attempt) : null, [attempt]);
 
@@ -257,6 +286,11 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
         <ResultInsights
           improvements={resultData.improvements}
           recommendation={recommendation}
+        />
+
+        <RecommendedTestsSection
+          tests={recommendedTests}
+          isLoading={isRecommendationsLoading}
         />
 
         <section className="flex flex-col gap-4">
