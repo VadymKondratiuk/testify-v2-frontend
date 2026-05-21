@@ -6,18 +6,43 @@ import ActiveFilterTags from "@/features/catalog/components/ActiveFilterTags";
 import Pagination from "@/features/catalog/components/Pagination";
 import SidebarFilters from "@/features/catalog/components/SidebarFilters";
 import TestCard from "@/features/catalog/components/TestCard";
-import { SORT_OPTIONS, type CatalogSort } from "@/features/catalog/catalog.consts";
+import {
+  SORT_OPTIONS,
+  type CatalogSort,
+} from "@/features/catalog/catalog.consts";
 import { useCatalogFilters } from "@/features/catalog/hooks/useCatalogFilters";
 import { RecommendedTestsSection } from "@/features/recommendations/components/RecommendedTestsSection";
-import { getRecommendedTests, trackRecommendationEvent, type RecommendedTest } from "@/features/recommendations/recommendations.api";
+import {
+  getRecommendedTests,
+  trackRecommendationEvent,
+  type RecommendedTest,
+} from "@/features/recommendations/recommendations.api";
+import { useAuthStore } from "@/features/auth/auth.store";
 
 export default function CatalogPage() {
   const filters = useCatalogFilters();
-  const [recommendedTests, setRecommendedTests] = useState<RecommendedTest[]>([]);
-  const [isRecommendationsLoading, setIsRecommendationsLoading] = useState(true);
+  const isAuthReady = useAuthStore((state) => state.isAuthReady);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [recommendedTests, setRecommendedTests] = useState<RecommendedTest[]>(
+    [],
+  );
+  const [isRecommendationsLoading, setIsRecommendationsLoading] =
+    useState(true);
 
   useEffect(() => {
+    if (!isAuthReady) {
+      setIsRecommendationsLoading(true);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setRecommendedTests([]);
+      setIsRecommendationsLoading(false);
+      return;
+    }
+
     let ignore = false;
+    setIsRecommendationsLoading(true);
 
     getRecommendedTests("catalog", 3)
       .then((tests) => {
@@ -32,6 +57,7 @@ export default function CatalogPage() {
               metadata: {
                 recommendationType: test.recommendationType,
                 matchedTags: test.matchedTags,
+                goalMatches: test.goalMatches,
                 weaknessDetails: test.weaknessDetails,
               },
             });
@@ -52,7 +78,7 @@ export default function CatalogPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [isAuthReady, isAuthenticated]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FF] font-['DM_Sans',sans-serif] text-slate-900 antialiased">
@@ -70,7 +96,9 @@ export default function CatalogPage() {
                 Browse Available Tests
               </span>
               <span className="text-[0.78rem] font-medium text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                {filters.isLoading ? "Loading..." : `${filters.totalResults} results`}
+                {filters.isLoading
+                  ? "Loading..."
+                  : `${filters.totalResults} results`}
               </span>
             </div>
 
@@ -81,7 +109,9 @@ export default function CatalogPage() {
               <select
                 id="sort"
                 value={filters.sortBy}
-                onChange={(event) => filters.setSortBy(event.target.value as CatalogSort)}
+                onChange={(event) =>
+                  filters.setSortBy(event.target.value as CatalogSort)
+                }
                 className="border-[1.5px] border-slate-300 rounded-md bg-white py-1.5 pl-3 pr-8 cursor-pointer outline-none focus:border-indigo-600"
               >
                 {SORT_OPTIONS.map((option) => (
@@ -124,7 +154,9 @@ export default function CatalogPage() {
           <section aria-label="Test cards" className="relative min-h-[260px]">
             {filters.error ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-500 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                <p className="text-[1.1rem] font-semibold text-slate-700">{filters.error}</p>
+                <p className="text-[1.1rem] font-semibold text-slate-700">
+                  {filters.error}
+                </p>
                 <button
                   type="button"
                   onClick={filters.handleClearAll}
@@ -134,23 +166,43 @@ export default function CatalogPage() {
                 </button>
               </div>
             ) : filters.isLoading ? (
-              <div className={filters.viewMode === "grid" ? "grid gap-5 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]" : "flex flex-col gap-4"}>
-                {Array.from({ length: filters.resultsPerPage }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-[310px] rounded-2xl border border-slate-200 bg-white shadow-sm animate-pulse"
-                  />
-                ))}
+              <div
+                className={
+                  filters.viewMode === "grid"
+                    ? "grid gap-5 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]"
+                    : "flex flex-col gap-4"
+                }
+              >
+                {Array.from({ length: filters.resultsPerPage }).map(
+                  (_, index) => (
+                    <div
+                      key={index}
+                      className="h-[310px] rounded-2xl border border-slate-200 bg-white shadow-sm animate-pulse"
+                    />
+                  ),
+                )}
               </div>
             ) : filters.filteredTests.length > 0 ? (
-              <div className={filters.viewMode === "grid" ? "grid gap-5 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]" : "flex flex-col gap-4"}>
+              <div
+                className={
+                  filters.viewMode === "grid"
+                    ? "grid gap-5 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]"
+                    : "flex flex-col gap-4"
+                }
+              >
                 {filters.filteredTests.map((card) => (
-                  <TestCard key={card.id} card={card} viewMode={filters.viewMode} />
+                  <TestCard
+                    key={card.id}
+                    card={card}
+                    viewMode={filters.viewMode}
+                  />
                 ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-slate-400 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                <p className="text-[1.1rem] font-medium">No tests found matching your criteria</p>
+                <p className="text-[1.1rem] font-medium">
+                  No tests found matching your criteria
+                </p>
                 <button
                   type="button"
                   onClick={filters.handleClearAll}

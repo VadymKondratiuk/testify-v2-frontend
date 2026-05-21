@@ -1,5 +1,6 @@
 // src/types/profile.ts
 import { LucideIcon } from "lucide-react";
+export type { LearningGoal } from "@/features/learning-goals/learning-goals.api";
 import type { RecommendationWeaknessDetail } from "@/features/recommendations/recommendations.api";
 
 export interface StatData {
@@ -13,10 +14,11 @@ export interface StatData {
 export interface RecommendationData {
   id: string;
   testId: string;
-  type: "gap" | "next";
+  type: "gap" | "goal" | "next";
   title: string;
   description: string;
   matchedTags?: string[];
+  goalMatches?: string[];
   weaknessDetails?: RecommendationWeaknessDetail[];
 }
 

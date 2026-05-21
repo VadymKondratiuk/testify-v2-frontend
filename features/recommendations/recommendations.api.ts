@@ -1,5 +1,8 @@
 import { api } from "@/shared/api/axios";
-import { TestCardData, type Difficulty } from "@/shared/types/testCardData.types";
+import {
+  TestCardData,
+  type Difficulty,
+} from "@/shared/types/testCardData.types";
 
 type BackendDifficulty = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
@@ -12,8 +15,13 @@ type BackendRecommendedTest = {
   averageRating?: number | null;
   reason: string;
   matchedTags: string[];
+  goalMatches?: string[];
   weaknessDetails: RecommendationWeaknessDetail[];
-  recommendationType: "knowledge_gap" | "next_level" | "popular";
+  recommendationType:
+    | "knowledge_gap"
+    | "learning_goal"
+    | "next_level"
+    | "popular";
   category?: {
     id: string;
     name: string;
@@ -36,8 +44,13 @@ type RecommendationsResponse = {
 export type RecommendedTest = TestCardData & {
   reason: string;
   matchedTags: string[];
+  goalMatches: string[];
   weaknessDetails: RecommendationWeaknessDetail[];
-  recommendationType: "knowledge_gap" | "next_level" | "popular";
+  recommendationType:
+    | "knowledge_gap"
+    | "learning_goal"
+    | "next_level"
+    | "popular";
 };
 
 export type RecommendationWeaknessDetail = {
@@ -81,6 +94,7 @@ function mapRecommendedTest(test: BackendRecommendedTest): RecommendedTest {
     rating: test.averageRating ?? 0,
     reason: test.reason,
     matchedTags: test.matchedTags,
+    goalMatches: test.goalMatches ?? [],
     weaknessDetails: test.weaknessDetails ?? [],
     recommendationType: test.recommendationType,
   };
@@ -90,13 +104,16 @@ export async function getRecommendedTests(
   placement: RecommendationPlacement,
   limit: number,
 ) {
-  const { data } = await api.get<RecommendationsResponse>("/recommendations/tests", {
-    params: {
-      placement,
-      limit,
+  const { data } = await api.get<RecommendationsResponse>(
+    "/recommendations/tests",
+    {
+      params: {
+        placement,
+        limit,
+      },
+      skipAuthRedirect: true,
     },
-    skipAuthRedirect: true,
-  });
+  );
 
   return data.items.map(mapRecommendedTest);
 }
@@ -115,13 +132,17 @@ export async function trackRecommendationEvent({
   metadata?: Record<string, unknown>;
 }) {
   try {
-    await api.post("/recommendations/events", {
-      testId,
-      placement,
-      eventType,
-      source,
-      metadata,
-    }, { skipAuthRedirect: true });
+    await api.post(
+      "/recommendations/events",
+      {
+        testId,
+        placement,
+        eventType,
+        source,
+        metadata,
+      },
+      { skipAuthRedirect: true },
+    );
   } catch {
     // Telemetry must never block the learning flow.
   }

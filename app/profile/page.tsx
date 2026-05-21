@@ -8,25 +8,35 @@ import { AlertTriangle, Loader2 } from "lucide-react";
 import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
 import { StatCard } from "@/features/profile/components/StatCard";
 import { RecommendationsWidget } from "@/features/profile/components/RecommendationsWidget";
+import { LearningGoalsWidget } from "@/features/profile/components/LearningGoalsWidget";
 import { UserProfileCard } from "@/features/profile/components/UserProfileCard";
 import { RecentHistoryWidget } from "@/features/profile/components/RecentHistoryWidget";
-import { getProfileDashboardData, type ProfileDashboardData } from "@/features/profile/profile.api";
+import {
+  getProfileDashboardData,
+  type ProfileDashboardData,
+} from "@/features/profile/profile.api";
 import { useAuthStore } from "@/features/auth/auth.store";
 import { trackRecommendationEvent } from "@/features/recommendations/recommendations.api";
 
 function getErrorMessage(error: unknown) {
   if (axios.isAxiosError<{ message?: string | string[] }>(error)) {
     const message = error.response?.data?.message;
-    return Array.isArray(message) ? message.join(" ") : message ?? "Unable to load profile data.";
+    return Array.isArray(message)
+      ? message.join(" ")
+      : (message ?? "Unable to load profile data.");
   }
 
-  return error instanceof Error ? error.message : "Unable to load profile data.";
+  return error instanceof Error
+    ? error.message
+    : "Unable to load profile data.";
 }
 
 export default function ProfilePage() {
   const currentUser = useAuthStore((state) => state.user);
   const isAuthReady = useAuthStore((state) => state.isAuthReady);
-  const [profileData, setProfileData] = useState<ProfileDashboardData | null>(null);
+  const [profileData, setProfileData] = useState<ProfileDashboardData | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +59,7 @@ export default function ProfilePage() {
               metadata: {
                 type: recommendation.type,
                 matchedTags: recommendation.matchedTags ?? [],
+                goalMatches: recommendation.goalMatches ?? [],
                 weaknessDetails: recommendation.weaknessDetails ?? [],
               },
             });
@@ -94,7 +105,9 @@ export default function ProfilePage() {
             <h2 className="mb-3 font-[family-name:var(--font-sora)] text-2xl font-bold text-[#0F172A]">
               Profile unavailable
             </h2>
-            <p className="mb-6 text-[#64748B]">{error ?? "Unable to load your profile."}</p>
+            <p className="mb-6 text-[#64748B]">
+              {error ?? "Unable to load your profile."}
+            </p>
             <Link
               href="/catalog"
               className="inline-flex items-center justify-center rounded-xl bg-[#4F46E5] px-6 py-3 text-[0.95rem] font-semibold text-white transition-colors hover:bg-[#4338CA]"
@@ -118,7 +131,11 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          <RecommendationsWidget recommendations={profileData.recommendations} />
+          <LearningGoalsWidget goals={profileData.learningGoals} />
+
+          <RecommendationsWidget
+            recommendations={profileData.recommendations}
+          />
         </div>
 
         <div className="flex flex-col gap-8">

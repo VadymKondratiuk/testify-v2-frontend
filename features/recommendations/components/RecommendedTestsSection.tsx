@@ -1,6 +1,10 @@
 import { Sparkles } from "lucide-react";
 import TestCard from "@/features/catalog/components/TestCard";
-import { trackRecommendationEvent, type RecommendationPlacement, type RecommendedTest } from "@/features/recommendations/recommendations.api";
+import {
+  trackRecommendationEvent,
+  type RecommendationPlacement,
+  type RecommendedTest,
+} from "@/features/recommendations/recommendations.api";
 
 interface RecommendedTestsSectionProps {
   tests: RecommendedTest[];
@@ -60,6 +64,7 @@ export function RecommendedTestsSection({
                     metadata: {
                       recommendationType: test.recommendationType,
                       matchedTags: test.matchedTags,
+                      goalMatches: test.goalMatches,
                       weaknessDetails: test.weaknessDetails,
                     },
                   });
@@ -76,7 +81,8 @@ export function RecommendedTestsSection({
                       className="rounded-md border border-red-100 bg-red-50 px-2 py-1 text-[0.7rem] font-semibold text-red-700"
                       title={`${detail.correctCount} correct, ${detail.wrongCount} wrong answers`}
                     >
-                      {detail.tag} · mastery {Math.round(detail.masteryScore * 100)}%
+                      {detail.tag} / mastery{" "}
+                      {Math.round(detail.masteryScore * 100)}%
                     </span>
                   ))}
                 </div>

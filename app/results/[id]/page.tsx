@@ -5,8 +5,16 @@ import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { api } from "@/shared/api/axios";
-import type { Question, TestData, TestDifficulty } from "@/shared/types/test.types";
-import type { SkillProgressItem, TestResultAnswer, TestResultData } from "@/shared/types/test-result.types";
+import type {
+  Question,
+  TestData,
+  TestDifficulty,
+} from "@/shared/types/test.types";
+import type {
+  SkillProgressItem,
+  TestResultAnswer,
+  TestResultData,
+} from "@/shared/types/test-result.types";
 import { getQuestionStatus } from "@/features/results/result.utils";
 import { ResultHeader } from "@/features/results/components/ResultHeader";
 import { ResultMetrics } from "@/features/results/components/ResultMetrics";
@@ -14,7 +22,11 @@ import { ResultInsights } from "@/features/results/components/ResultInsights";
 import { QuestionReviewItem } from "@/features/results/components/QuestionReviewItem";
 import { SkillProgressPanel } from "@/features/results/components/SkillProgressPanel";
 import { RecommendedTestsSection } from "@/features/recommendations/components/RecommendedTestsSection";
-import { getRecommendedTests, trackRecommendationEvent, type RecommendedTest } from "@/features/recommendations/recommendations.api";
+import {
+  getRecommendedTests,
+  trackRecommendationEvent,
+  type RecommendedTest,
+} from "@/features/recommendations/recommendations.api";
 
 type BackendQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TEXT_ANSWER";
 type BackendDifficulty = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
@@ -108,7 +120,9 @@ function toUiDifficulty(difficulty: BackendDifficulty): TestDifficulty {
 function getErrorMessage(error: unknown) {
   if (axios.isAxiosError<{ message?: string | string[] }>(error)) {
     const message = error.response?.data?.message;
-    return Array.isArray(message) ? message.join(" ") : message ?? "Failed to load test results.";
+    return Array.isArray(message)
+      ? message.join(" ")
+      : (message ?? "Failed to load test results.");
   }
 
   return "Failed to load test results.";
@@ -117,7 +131,12 @@ function getErrorMessage(error: unknown) {
 function getTotalTimeSeconds(startedAt: string, completedAt: string | null) {
   if (!completedAt) return 0;
 
-  return Math.max(0, Math.round((new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000));
+  return Math.max(
+    0,
+    Math.round(
+      (new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000,
+    ),
+  );
 }
 
 function mapAttempt(attempt: BackendAttempt) {
@@ -136,7 +155,9 @@ function mapAttempt(attempt: BackendAttempt) {
     text: backendQuestion.text,
     correctTextAnswer: backendQuestion.correctTextAnswer ?? "",
     acceptedTextAnswers: backendQuestion.acceptedTextAnswers ?? [],
-    tags: (backendQuestion.tags ?? []).map((tag) => tag.name ?? tag.id ?? "").filter(Boolean),
+    tags: (backendQuestion.tags ?? [])
+      .map((tag) => tag.name ?? tag.id ?? "")
+      .filter(Boolean),
     options: (backendQuestion.options ?? []).map((option) => ({
       id: option.id,
       text: option.text,
@@ -148,10 +169,13 @@ function mapAttempt(attempt: BackendAttempt) {
     const selectedOptionIds = answers
       .map((answer) => answer.optionId)
       .filter((optionId): optionId is string => Boolean(optionId));
-    const textAnswer = answers.find((answer) => Boolean(answer.textAnswer?.trim()))?.textAnswer?.trim();
-    const earnedPoints = answers.length === 0
-      ? 0
-      : Math.max(...answers.map((answer) => answer.earnedPoints ?? 0));
+    const textAnswer = answers
+      .find((answer) => Boolean(answer.textAnswer?.trim()))
+      ?.textAnswer?.trim();
+    const earnedPoints =
+      answers.length === 0
+        ? 0
+        : Math.max(...answers.map((answer) => answer.earnedPoints ?? 0));
 
     return {
       questionId: question.id,
@@ -178,21 +202,31 @@ function mapAttempt(attempt: BackendAttempt) {
     testId: attempt.test.id,
     startedAt: attempt.startedAt,
     submittedAt: attempt.completedAt ?? attempt.startedAt,
-    totalTimeSeconds: getTotalTimeSeconds(attempt.startedAt, attempt.completedAt),
+    totalTimeSeconds: getTotalTimeSeconds(
+      attempt.startedAt,
+      attempt.completedAt,
+    ),
     answers: resultAnswers,
     strengths: [],
     improvements: attempt.focusAreas,
     skillProgress: attempt.skillProgress ?? [],
   };
 
-  return { testData, resultData, recommendation: attempt.studyRecommendation ?? undefined };
+  return {
+    testData,
+    resultData,
+    recommendation: attempt.studyRecommendation ?? undefined,
+  };
 }
 
 export default function TestResultsPage({ params }: TestResultsPageProps) {
   const { id } = use(params);
   const [attempt, setAttempt] = useState<BackendAttempt | null>(null);
-  const [recommendedTests, setRecommendedTests] = useState<RecommendedTest[]>([]);
-  const [isRecommendationsLoading, setIsRecommendationsLoading] = useState(true);
+  const [recommendedTests, setRecommendedTests] = useState<RecommendedTest[]>(
+    [],
+  );
+  const [isRecommendationsLoading, setIsRecommendationsLoading] =
+    useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -227,6 +261,7 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
                 attemptId: id,
                 recommendationType: test.recommendationType,
                 matchedTags: test.matchedTags,
+                goalMatches: test.goalMatches,
                 weaknessDetails: test.weaknessDetails,
               },
             });
@@ -249,7 +284,10 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
     };
   }, []);
 
-  const mappedResult = useMemo(() => attempt ? mapAttempt(attempt) : null, [attempt]);
+  const mappedResult = useMemo(
+    () => (attempt ? mapAttempt(attempt) : null),
+    [attempt],
+  );
 
   if (isLoading) {
     return (
@@ -272,7 +310,9 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
           <h1 className="mb-3 font-[family-name:var(--font-sora)] text-2xl font-bold">
             Results unavailable
           </h1>
-          <p className="mb-6 text-[#64748B]">{error ?? "Unable to load these results."}</p>
+          <p className="mb-6 text-[#64748B]">
+            {error ?? "Unable to load these results."}
+          </p>
           <Link
             href="/history"
             className="inline-flex items-center justify-center rounded-xl bg-[#4F46E5] px-6 py-3 text-[0.95rem] font-semibold text-white transition-colors hover:bg-[#4338CA]"
@@ -285,19 +325,30 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
   }
 
   const { testData, resultData, recommendation } = mappedResult;
-  const totalPoints = testData.questions.reduce((sum, question) => sum + question.points, 0);
-  const earnedPoints = Math.round(resultData.answers.reduce((sum, answer) => sum + answer.earnedPoints, 0) * 100) / 100;
-  const score = totalPoints === 0 ? 0 : Math.round((earnedPoints / totalPoints) * 100);
+  const totalPoints = testData.questions.reduce(
+    (sum, question) => sum + question.points,
+    0,
+  );
+  const earnedPoints =
+    Math.round(
+      resultData.answers.reduce((sum, answer) => sum + answer.earnedPoints, 0) *
+        100,
+    ) / 100;
+  const score =
+    totalPoints === 0 ? 0 : Math.round((earnedPoints / totalPoints) * 100);
   const passed = score >= testData.passingScore;
 
   const correctCount = testData.questions.filter((question) => {
-    const answer = resultData.answers.find((item) => item.questionId === question.id);
+    const answer = resultData.answers.find(
+      (item) => item.questionId === question.id,
+    );
     return getQuestionStatus(question, answer) === "correct";
   }).length;
 
-  const averageTimePerQuestion = testData.questions.length === 0
-    ? 0
-    : Math.round(resultData.totalTimeSeconds / testData.questions.length);
+  const averageTimePerQuestion =
+    testData.questions.length === 0
+      ? 0
+      : Math.round(resultData.totalTimeSeconds / testData.questions.length);
 
   return (
     <div className="min-h-screen bg-[#F5F7FF] pb-16">
@@ -338,8 +389,13 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
         <section className="flex flex-col gap-4">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
             <div>
-              <h2 className="font-[family-name:var(--font-sora)] text-[1.5rem] font-bold text-[#0F172A]">Question Review</h2>
-              <p className="mt-1 text-[0.95rem] text-[#64748B]">Compare your selected answers with the correct answers for every question.</p>
+              <h2 className="font-[family-name:var(--font-sora)] text-[1.5rem] font-bold text-[#0F172A]">
+                Question Review
+              </h2>
+              <p className="mt-1 text-[0.95rem] text-[#64748B]">
+                Compare your selected answers with the correct answers for every
+                question.
+              </p>
             </div>
           </div>
 
@@ -348,7 +404,9 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
               key={question.id}
               index={index}
               question={question}
-              resultAnswer={resultData.answers.find((answer) => answer.questionId === question.id)}
+              resultAnswer={resultData.answers.find(
+                (answer) => answer.questionId === question.id,
+              )}
             />
           ))}
         </section>
