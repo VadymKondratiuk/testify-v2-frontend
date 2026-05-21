@@ -1,4 +1,4 @@
-import { TestResultData } from "@/shared/types/test-result.types";
+import type { TestResultData } from "@/shared/types/test-result.types";
 
 export const mockTestResult: TestResultData = {
   id: "attempt-101-001",
@@ -45,4 +45,34 @@ export const mockTestResult: TestResultData = {
   ],
   strengths: ["Closures", "Variable declarations", "Array mutations"],
   improvements: ["Event loop priorities", "Promise concurrency methods", "Temporal Dead Zone"],
+  skillProgress: [
+    {
+      tagId: "tag-event-loop",
+      tag: "Event loop",
+      attemptsCountBefore: 4,
+      attemptsCountAfter: 5,
+      correctCountBefore: 2,
+      correctCountAfter: 2,
+      wrongCountBefore: 2,
+      wrongCountAfter: 3,
+      masteryBefore: 0.5,
+      masteryAfter: 0.4,
+      masteryDelta: -0.1,
+      result: "declined",
+    },
+    {
+      tagId: "tag-closures",
+      tag: "Closures",
+      attemptsCountBefore: 3,
+      attemptsCountAfter: 4,
+      correctCountBefore: 2,
+      correctCountAfter: 3,
+      wrongCountBefore: 1,
+      wrongCountAfter: 1,
+      masteryBefore: 0.6667,
+      masteryAfter: 0.75,
+      masteryDelta: 0.0833,
+      result: "improved",
+    },
+  ],
 };

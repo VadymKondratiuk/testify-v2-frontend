@@ -5,13 +5,14 @@ import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { api } from "@/shared/api/axios";
-import { Question, TestData, TestDifficulty } from "@/shared/types/test.types";
-import { TestResultAnswer, TestResultData } from "@/shared/types/test-result.types";
+import type { Question, TestData, TestDifficulty } from "@/shared/types/test.types";
+import type { SkillProgressItem, TestResultAnswer, TestResultData } from "@/shared/types/test-result.types";
 import { getQuestionStatus } from "@/features/results/result.utils";
 import { ResultHeader } from "@/features/results/components/ResultHeader";
 import { ResultMetrics } from "@/features/results/components/ResultMetrics";
 import { ResultInsights } from "@/features/results/components/ResultInsights";
 import { QuestionReviewItem } from "@/features/results/components/QuestionReviewItem";
+import { SkillProgressPanel } from "@/features/results/components/SkillProgressPanel";
 import { RecommendedTestsSection } from "@/features/recommendations/components/RecommendedTestsSection";
 import { getRecommendedTests, trackRecommendationEvent, type RecommendedTest } from "@/features/recommendations/recommendations.api";
 
@@ -57,6 +58,7 @@ type BackendAttempt = {
   completedAt: string | null;
   studyRecommendation?: string | null;
   focusAreas: string[];
+  skillProgress?: SkillProgressItem[] | null;
   test: {
     id: string;
     title: string;
@@ -180,6 +182,7 @@ function mapAttempt(attempt: BackendAttempt) {
     answers: resultAnswers,
     strengths: [],
     improvements: attempt.focusAreas,
+    skillProgress: attempt.skillProgress ?? [],
   };
 
   return { testData, resultData, recommendation: attempt.studyRecommendation ?? undefined };
@@ -322,6 +325,8 @@ export default function TestResultsPage({ params }: TestResultsPageProps) {
           improvements={resultData.improvements}
           recommendation={recommendation}
         />
+
+        <SkillProgressPanel items={resultData.skillProgress} />
 
         <RecommendedTestsSection
           tests={recommendedTests}
